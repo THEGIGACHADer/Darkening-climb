@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dark Dungeon</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script src="assets/sprites.js"></script>
+  <script src="engine/input.js"></script>
+  <script src="engine/raycaster.js"></script>
+  <script src="engine/topdown.js"></script>
+  <script src="engine/renderer2d.js"></script>
+  <script src="entities/player.js"></script>
+  <script src="entities/bullet.js"></script>
+  <script src="entities/slime.js"></script>
+  <script src="entities/zombie.js"></script>
+  <script src="entities/bosses.js"></script>
+  <script src="levels/level.js"></script>
+  <script src="levels/worlds.js"></script>
+  <script src="ui/hud.js"></script>
+  <script src="ui/screens.js"></script>
+  <script src="ui/deathanim.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
