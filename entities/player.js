@@ -55,7 +55,7 @@ const Player = (() => {
     if (mlen > 0) { mx /= mlen; my /= mlen; }
 
     const boosted = p.boostTimer > 0;
-    const spd = boosted ? SPEED * 2.5 : SPEED;
+    const spd = (boosted ? SPEED * 2.5 : SPEED) * (p.devSpeedMult || 1);
     const dx = (mx * spd + p.vx) * dt;
     const dy = (my * spd + p.vy) * dt;
     const nx = p.x + dx, ny = p.y + dy;

@@ -41,6 +41,7 @@ let devBossIndex  = 0;
 let devInvincible = false;
 let devNoclip     = false;
 let devNoDarkness = false;
+let devSpeedMult  = 1.0;
 let player, level, bullets, boss;
 let levelIndex, worldIndex, levelInWorld;
 let bossIntroTimer;
@@ -174,6 +175,8 @@ function update(dt) {
     if (Input.wasPressed('KeyI')) { devInvincible = !devInvincible; return; }
     if (Input.wasPressed('KeyN')) { devNoclip     = !devNoclip;     return; }
     if (Input.wasPressed('KeyF')) { devNoDarkness = !devNoDarkness; return; }
+    if (Input.wasPressed('BracketLeft'))  { devSpeedMult = Math.max(0.25, +(devSpeedMult - 0.25).toFixed(2)); return; }
+    if (Input.wasPressed('BracketRight')) { devSpeedMult = Math.min(5.0,  +(devSpeedMult + 0.25).toFixed(2)); return; }
   }
 
   switch (state) {
@@ -183,6 +186,7 @@ function update(dt) {
       break;
 
     case STATE.PLAYING: {
+      player.devSpeedMult = devSpeedMult;
       if (devNoclip) {
         const origIsWall = level.isWall;
         level.isWall = () => false;
@@ -411,6 +415,7 @@ function render() {
         invincible:  devInvincible,
         noclip:      devNoclip,
         noDarkness:  devNoDarkness,
+        speedMult:   devSpeedMult,
       } : null;
       Screens.drawPaused(tmp.getContext('2d'), devInfo);
       ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);

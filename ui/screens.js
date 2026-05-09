@@ -120,42 +120,46 @@ const Screens = (() => {
 
       // Dev panel background
       ctx.fillStyle = 'rgba(0,20,0,0.92)';
-      ctx.fillRect(10, 108, W - 20, 90);
+      ctx.fillRect(10, 100, W - 20, 98);
       ctx.strokeStyle = '#224422';
       ctx.lineWidth = 1;
-      ctx.strokeRect(10, 108, W - 20, 90);
+      ctx.strokeRect(10, 100, W - 20, 98);
 
       // Stats
       ctx.font = '8px Arial, sans-serif';
       ctx.fillStyle = '#44ff44';
-      ctx.fillText(`HP ${devInfo.hp}/${devInfo.maxHp}   W${devInfo.world + 1}-L${devInfo.level + 1}   Enemies: ${devInfo.enemies}`, 16, 120);
-      ctx.fillText(`Pos (${devInfo.px}, ${devInfo.py})   Vig: ${devInfo.vig}   Boss: ${devInfo.bossHp}`, 16, 130);
+      ctx.fillText(`HP ${devInfo.hp}/${devInfo.maxHp}   W${devInfo.world + 1}-L${devInfo.level + 1}   Enemies: ${devInfo.enemies}`, 16, 112);
+      ctx.fillText(`Pos (${devInfo.px}, ${devInfo.py})   Vig: ${devInfo.vig}   Boss: ${devInfo.bossHp}`, 16, 122);
 
       // Cheat toggles
       ctx.font = '7px Arial, sans-serif';
       const on = '#44ff44', off = '#335533';
-      ctx.fillStyle = devInfo.invincible  ? on : off; ctx.fillText('[I] Invincible', 16,  141);
-      ctx.fillStyle = devInfo.noclip      ? on : off; ctx.fillText('[N] Noclip',    112, 141);
-      ctx.fillStyle = devInfo.noDarkness  ? on : off; ctx.fillText('[F] No Darkness', 190, 141);
+      ctx.fillStyle = devInfo.invincible  ? on : off; ctx.fillText('[I] Invincible',  16,  133);
+      ctx.fillStyle = devInfo.noclip      ? on : off; ctx.fillText('[N] Noclip',      112, 133);
+      ctx.fillStyle = devInfo.noDarkness  ? on : off; ctx.fillText('[F] No Darkness', 190, 133);
+
+      // Speed multiplier
+      ctx.fillStyle = devInfo.speedMult !== 1.0 ? '#ffdd44' : '#446644';
+      ctx.fillText(`[ ] Speed: ${devInfo.speedMult.toFixed(2)}x`, 16, 143);
 
       // Divider
       ctx.strokeStyle = '#224422';
-      ctx.beginPath(); ctx.moveTo(14, 147); ctx.lineTo(W - 14, 147); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(14, 149); ctx.lineTo(W - 14, 149); ctx.stroke();
 
       // Death selector
       ctx.font = '8px Arial, sans-serif';
       ctx.fillStyle = '#886600';
-      ctx.fillText('Trigger death:', 16, 157);
-      centeredText(ctx, `< ${DEATH_NAMES[devInfo.deathIndex]} >`, 166, 9, '#ffcc00');
-      centeredText(ctx, '← → pick   T trigger', 174, 7, '#664400');
+      ctx.fillText('Trigger death:', 16, 159);
+      centeredText(ctx, `< ${DEATH_NAMES[devInfo.deathIndex]} >`, 168, 9, '#ffcc00');
+      centeredText(ctx, '← → pick   T trigger', 176, 7, '#664400');
 
       // Divider
       ctx.strokeStyle = '#224422';
-      ctx.beginPath(); ctx.moveTo(14, 180); ctx.lineTo(W - 14, 180); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(14, 182); ctx.lineTo(W - 14, 182); ctx.stroke();
 
       // Boss warp selector
-      centeredText(ctx, `< ${BOSS_NAMES[devInfo.bossIndex]} >`, 190, 9, '#00eeff');
-      centeredText(ctx, '↑ ↓ pick   B warp to boss', 197, 7, '#005566');
+      centeredText(ctx, `< ${BOSS_NAMES[devInfo.bossIndex]} >`, 191, 9, '#00eeff');
+      centeredText(ctx, '↑ ↓ pick   B warp to boss', 198, 7, '#005566');
     }
   }
 
