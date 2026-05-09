@@ -102,6 +102,87 @@ const Audio = (() => {
     });
   }
 
+  // ── Death SFX ──────────────────────────────────────────────────────────────
+
+  function sched(type, f0, f1, dur, vol, delay = 0) {
+    if (!isRunning()) return;
+    const t = actx.currentTime + delay;
+    const osc = actx.createOscillator();
+    const g   = actx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(f0, t);
+    osc.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(g); g.connect(master);
+    osc.start(t); osc.stop(t + dur + 0.01);
+  }
+
+  function playDeathSfx(cause) {
+    if (!isRunning()) return;
+    switch (cause) {
+
+      case 'slime':
+        // Wet squelch — two detuned descending sawtooth layers
+        sched('sawtooth', 220, 35, 0.22, 0.28);
+        sched('sawtooth', 160, 28, 0.18, 0.20, 0.05);
+        break;
+
+      case 'zombie':
+        // Rhythmic chomping — four square bursts
+        [0, 0.09, 0.18, 0.27].forEach(d => sched('square', 200, 55, 0.07, 0.16, d));
+        break;
+
+      case 'darkness':
+        // Deep ominous drone that breathes in and fades — plus eerie high harmonic
+        { const t = actx.currentTime;
+          const osc = actx.createOscillator(), g = actx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(38, t);
+          osc.frequency.linearRampToValueAtTime(24, t + 2.4);
+          g.gain.setValueAtTime(0.001, t);
+          g.gain.linearRampToValueAtTime(0.22, t + 0.9);
+          g.gain.setValueAtTime(0.22, t + 1.8);
+          g.gain.linearRampToValueAtTime(0.001, t + 2.8);
+          osc.connect(g); g.connect(master);
+          osc.start(t); osc.stop(t + 3.0); }
+        sched('sine', 310, 280, 2.0, 0.04, 0.5);
+        break;
+
+      case 'slimeQueen':
+        // Spike whooshing up then a heavy wet thud
+        sched('sawtooth', 80,  900, 0.14, 0.22);
+        sched('sine',     100,  18, 0.45, 0.35, 0.15);
+        sched('sawtooth', 300,  60, 0.20, 0.15, 0.15);
+        break;
+
+      case 'zombieKing':
+        // Sharp finger-snap then a tumbling descent
+        sched('square',   700,  90, 0.08, 0.28);
+        sched('sawtooth', 380,  45, 0.55, 0.18, 0.10);
+        break;
+
+      case 'necromancer':
+        // Mystical ascending chord — three triangle harmonics
+        [[220, 210], [330, 320], [440, 425]].forEach(([f0, f1], i) =>
+          sched('triangle', f0, f1, 1.8, 0.10, i * 0.12));
+        sched('sine', 110, 95, 2.0, 0.08, 0.3);
+        break;
+
+      case 'darkOverlord':
+        // Full-spectrum crash — low rumble + mid crunch + high sting + sub wave
+        sched('sawtooth', 65,   8, 0.60, 0.35);
+        sched('sawtooth', 320, 28, 0.45, 0.22);
+        sched('square',   900, 180, 0.30, 0.18);
+        sched('sine',      45,  12, 1.20, 0.28, 0.15);
+        break;
+
+      default:
+        sched('sine', 80, 20, 0.6, 0.20);
+        break;
+    }
+  }
+
   // ── SFX ────────────────────────────────────────────────────────────────────
 
   function sfx(type, f0, f1, dur, vol) {
@@ -127,6 +208,6 @@ const Audio = (() => {
     resume,
     stopMusic,
     playMenuMusic, playGameMusic, playBossMusic, playWorldClear,
-    playShoot, playHit, playEnemyDeath, playBossHit,
+    playShoot, playHit, playEnemyDeath, playBossHit, playDeathSfx,
   };
 })();

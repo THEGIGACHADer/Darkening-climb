@@ -113,7 +113,7 @@ function setState(s) {
     Audio.playWorldClear();
   }
   if (s === STATE.PLAYING)   Audio.playGameMusic(worldIndex);
-  if (s === STATE.DEATH_ANIM) deathTimer = 0;
+  if (s === STATE.DEATH_ANIM) { deathTimer = 0; Audio.stopMusic(); Audio.playDeathSfx(deathCause); }
   if (s === STATE.GAME_OVER || s === STATE.WIN) Audio.stopMusic();
   if (s === STATE.MENU)      Audio.playMenuMusic();
   Input.clearJustPressed();
