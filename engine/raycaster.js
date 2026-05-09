@@ -133,7 +133,7 @@ const Raycaster = (() => {
     for (const e of enemies) {
       if (e.dead) continue;
       const dx = e.x - player.x, dy = e.y - player.y;
-      spriteList.push({ x: e.x, y: e.y, dist: dx*dx + dy*dy, key: e.type });
+      spriteList.push({ x: e.x, y: e.y, dist: dx*dx + dy*dy, key: e.type, scale: e.jumpScale || 1 });
     }
     for (const b of bullets) {
       const dx = b.x - player.x, dy = b.y - player.y;
@@ -150,7 +150,7 @@ const Raycaster = (() => {
       if (ty <= 0.1) continue;
 
       const screenX = ((W / 2) * (1 + tx / ty)) | 0;
-      const sprH = Math.min(H * 2, (H / ty) | 0);
+      const sprH = Math.min(H * 2, (H / ty * (s.scale || 1)) | 0);
       const sprW = sprH;
       // Sprites center at horizonY (pitch-aware)
       const cY = horizonY;

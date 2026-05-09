@@ -105,7 +105,7 @@ const TopDown = (() => {
         ctx.strokeStyle = '#556677';
       }
       ctx.lineWidth = 1;
-      const r = TS * 0.36 * (e.size || 1) * 0.7 + TS * 0.15;
+      const r = (TS * 0.36 * (e.size || 1) * 0.7 + TS * 0.15) * (e.jumpScale || 1);
       ctx.beginPath();
       ctx.arc(e.x * TS, e.y * TS, r, 0, Math.PI * 2);
       ctx.fill();
