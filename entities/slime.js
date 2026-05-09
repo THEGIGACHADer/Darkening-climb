@@ -31,15 +31,28 @@ const Slime = (() => {
       s.hopVy = (dy / dist) * speed;
     }
 
-    // Apply hop movement with wall sliding
+    // Apply hop movement — if wall is 1 tile thick, jump over it
     const nx = s.x + s.hopVx * dt;
     const ny = s.y + s.hopVy * dt;
-    if (!level.isWall(nx, s.y) && !level.isWall(nx, s.y + 0.2) && !level.isWall(nx, s.y - 0.2))
+    if (!level.isWall(nx, s.y) && !level.isWall(nx, s.y + 0.2) && !level.isWall(nx, s.y - 0.2)) {
       s.x = nx;
-    else s.hopVx = 0;
-    if (!level.isWall(s.x, ny) && !level.isWall(s.x + 0.2, ny) && !level.isWall(s.x - 0.2, ny))
+    } else if (Math.abs(s.hopVx) > 1.0) {
+      const dir = s.hopVx > 0 ? 1 : -1;
+      const landX = nx + dir;
+      if (!level.isWall(landX, s.y) && !level.isWall(landX, s.y + 0.2) && !level.isWall(landX, s.y - 0.2))
+        s.x = landX;
+      else s.hopVx = 0;
+    } else s.hopVx = 0;
+
+    if (!level.isWall(s.x, ny) && !level.isWall(s.x + 0.2, ny) && !level.isWall(s.x - 0.2, ny)) {
       s.y = ny;
-    else s.hopVy = 0;
+    } else if (Math.abs(s.hopVy) > 1.0) {
+      const dir = s.hopVy > 0 ? 1 : -1;
+      const landY = ny + dir;
+      if (!level.isWall(s.x, landY) && !level.isWall(s.x + 0.2, landY) && !level.isWall(s.x - 0.2, landY))
+        s.y = landY;
+      else s.hopVy = 0;
+    } else s.hopVy = 0;
 
     s.hopVx *= s.hopDecay;
     s.hopVy *= s.hopDecay;
