@@ -146,77 +146,102 @@ const Bosses = (() => {
     };
     boss.draw = (ctx) => {
       const cs = boss.ceilingState;
-      const atCeiling = cs === 'ceiling';
-      const drilling  = cs === 'drilling' || cs === 'returnUp';
-      const inAir     = cs !== 'floor';
 
-      const sy = boss.squishY;
-      let w = boss.w + sy * 12, h = boss.h - sy * 7;
-      if (atCeiling) { w = (boss.w * 1.25) | 0; h = (boss.h * 0.75) | 0; }
-      else if (drilling) { w = (boss.w * 0.55) | 0; h = (boss.h * 1.7) | 0; }
-
-      const bx = boss.x - w / 2, by = boss.y - h;
-
-      // Flip upside-down when hanging at ceiling
-      if (atCeiling) {
+      if (cs === 'drilling') {
+        // Spin 1440° crown-first while falling
+        const drillProg = Math.min(1, (boss.y - boss.h) / (FLOOR_Y - boss.h));
+        const w = boss.w, h = boss.h;
         ctx.save();
-        const midY = boss.y - h / 2;
-        ctx.translate(0, midY * 2);
-        ctx.scale(1, -1);
-      }
-
-      ctx.fillStyle = '#00aa33';
-      ctx.fillRect(bx + 2, by + 2, w - 4, h - 4);
-      ctx.fillStyle = '#22ee55';
-      ctx.fillRect(bx, by, w, h);
-      ctx.fillStyle = '#55ff88';
-      ctx.fillRect(bx + 4, by + 3, w / 3, 4);
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(bx + 7, by + h * 0.3, 6, 6);
-      ctx.fillRect(bx + w - 13, by + h * 0.3, 6, 6);
-      ctx.fillStyle = '#000';
-      ctx.fillRect(bx + 9, by + h * 0.3 + 2, 3, 3);
-      ctx.fillRect(bx + w - 11, by + h * 0.3 + 2, 3, 3);
-
-      if (atCeiling) ctx.restore();
-
-      // Crown only on floor
-      if (!inAir) {
-        ctx.fillStyle = '#ffdd00';
-        const cx = boss.x;
-        ctx.beginPath();
-        ctx.moveTo(cx - 12, by); ctx.lineTo(cx - 12, by - 6);
-        ctx.lineTo(cx - 6,  by - 3); ctx.lineTo(cx, by - 9);
-        ctx.lineTo(cx + 6,  by - 3); ctx.lineTo(cx + 12, by - 6);
-        ctx.lineTo(cx + 12, by); ctx.fill();
-      }
-
-      // Drill spike when falling/returning up
-      if (drilling) {
+        ctx.translate(boss.x, boss.y - h / 2);
+        ctx.rotate(drillProg * 8 * Math.PI);  // 1440° = 4 full rotations
+        ctx.scale(1, -1);                       // flip so crown faces down (drill tip)
+        // Body centered at origin
+        ctx.fillStyle = '#00aa33';
+        ctx.fillRect(-w/2 + 2, -h/2 + 2, w - 4, h - 4);
+        ctx.fillStyle = '#22ee55';
+        ctx.fillRect(-w/2, -h/2, w, h);
         ctx.fillStyle = '#55ff88';
+        ctx.fillRect(-w/2 + 4, -h/2 + 3, w / 3, 4);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(-w/2 + 7,  -h/2 + h * 0.3, 6, 6);
+        ctx.fillRect( w/2 - 13, -h/2 + h * 0.3, 6, 6);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(-w/2 + 9,  -h/2 + h * 0.3 + 2, 3, 3);
+        ctx.fillRect( w/2 - 11, -h/2 + h * 0.3 + 2, 3, 3);
+        // Crown at leading tip (scale flip puts this at the bottom = drill front)
+        ctx.fillStyle = '#ffdd00';
         ctx.beginPath();
-        ctx.moveTo(boss.x - 5, boss.y);
-        ctx.lineTo(boss.x + 5, boss.y);
-        ctx.lineTo(boss.x, boss.y + 14);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      // Dashed targeting line when hanging at ceiling
-      if (atCeiling) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(0,255,100,0.5)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath();
-        ctx.moveTo(boss.x, boss.y);
-        ctx.lineTo(boss.x, FLOOR_Y);
-        ctx.stroke();
-        ctx.setLineDash([]);
+        ctx.moveTo(-12, -h/2); ctx.lineTo(-12, -h/2 - 6);
+        ctx.lineTo(-6,  -h/2 - 3); ctx.lineTo(0, -h/2 - 9);
+        ctx.lineTo(6,   -h/2 - 3); ctx.lineTo(12, -h/2 - 6);
+        ctx.lineTo(12,  -h/2); ctx.fill();
         ctx.restore();
+      } else {
+        const atCeiling = cs === 'ceiling';
+        const isReturnUp = cs === 'returnUp';
+        const inAir = cs !== 'floor';
+
+        const sy = boss.squishY;
+        let w = boss.w + sy * 12, h = boss.h - sy * 7;
+        if (atCeiling) { w = (boss.w * 1.25) | 0; h = (boss.h * 0.75) | 0; }
+
+        const bx = boss.x - w / 2, by = boss.y - h;
+
+        if (atCeiling) {
+          ctx.save();
+          ctx.translate(0, (boss.y - h / 2) * 2);
+          ctx.scale(1, -1);
+        }
+
+        ctx.fillStyle = '#00aa33';
+        ctx.fillRect(bx + 2, by + 2, w - 4, h - 4);
+        ctx.fillStyle = '#22ee55';
+        ctx.fillRect(bx, by, w, h);
+        ctx.fillStyle = '#55ff88';
+        ctx.fillRect(bx + 4, by + 3, w / 3, 4);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(bx + 7, by + h * 0.3, 6, 6);
+        ctx.fillRect(bx + w - 13, by + h * 0.3, 6, 6);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(bx + 9, by + h * 0.3 + 2, 3, 3);
+        ctx.fillRect(bx + w - 11, by + h * 0.3 + 2, 3, 3);
+
+        if (atCeiling) ctx.restore();
+
+        if (!inAir) {
+          ctx.fillStyle = '#ffdd00';
+          ctx.beginPath();
+          ctx.moveTo(boss.x - 12, by); ctx.lineTo(boss.x - 12, by - 6);
+          ctx.lineTo(boss.x - 6,  by - 3); ctx.lineTo(boss.x, by - 9);
+          ctx.lineTo(boss.x + 6,  by - 3); ctx.lineTo(boss.x + 12, by - 6);
+          ctx.lineTo(boss.x + 12, by); ctx.fill();
+        }
+
+        if (isReturnUp) {
+          ctx.fillStyle = '#55ff88';
+          ctx.beginPath();
+          ctx.moveTo(boss.x - 5, boss.y);
+          ctx.lineTo(boss.x + 5, boss.y);
+          ctx.lineTo(boss.x, boss.y + 14);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        if (atCeiling) {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(0,255,100,0.5)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(boss.x, boss.y);
+          ctx.lineTo(boss.x, FLOOR_Y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
       }
 
-      // Projectile acid drops
+      // Projectile acid drops (always)
       ctx.fillStyle = '#00ee44';
       for (const p of boss.projectiles) {
         ctx.beginPath();
