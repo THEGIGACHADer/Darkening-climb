@@ -468,6 +468,8 @@ const Bosses = (() => {
       shootCooldown: 1.8,   // wait before first volley
       shotsLeft: 0,
       shotGapTimer: 0,
+      spikeTimer: 6,        // countdown to first spike attack
+      spikes: [],
     };
 
     boss.takeDamage = (amt) => {
@@ -540,6 +542,47 @@ const Bosses = (() => {
         }
       }
       boss.projectiles = boss.projectiles.filter(p => !p.dead);
+
+      // Spike attack — warn → up → down, one sequence at a time
+      if (boss.spikeTimer > 0) {
+        boss.spikeTimer -= dt;
+        if (boss.spikeTimer <= 0) {
+          const count = 3 + boss.phase;     // 4 / 5 / 6 spikes
+          const segW = (W2D - 40) / count;
+          for (let i = 0; i < count; i++) {
+            boss.spikes.push({
+              x: 20 + segW * i + Math.random() * segW,
+              state: 'warn',   // 'warn' | 'up' | 'down'
+              t: 0,
+              hit: false,
+            });
+          }
+        }
+      }
+
+      for (const sp of boss.spikes) {
+        sp.t += dt;
+        if (sp.state === 'warn' && sp.t >= 0.55) { sp.state = 'up'; sp.t = 0; }
+        else if (sp.state === 'up') {
+          if (!sp.hit) {
+            const prog = Math.min(1, sp.t / 0.28);
+            const e = 1 - (1 - prog) * (1 - prog);
+            const spikeTop = FLOOR_Y - e * 38;
+            if (Math.abs(sp.x - player2d.x2d) < 9 && player2d.y2d >= spikeTop - 5) {
+              Player.takeDamage(player2d, 18);
+              sp.hit = true;
+            }
+          }
+          if (sp.t >= 0.28) { sp.state = 'down'; sp.t = 0; }
+        } else if (sp.state === 'down' && sp.t >= 0.22) {
+          sp.state = 'done';
+        }
+      }
+
+      boss.spikes = boss.spikes.filter(sp => sp.state !== 'done');
+      if (boss.spikes.length === 0 && boss.spikeTimer <= 0) {
+        boss.spikeTimer = boss.phase === 1 ? 8 : boss.phase === 2 ? 6 : 4;
+      }
     };
 
     boss.draw = (ctx) => {
@@ -566,6 +609,43 @@ const Bosses = (() => {
       ctx.fillStyle = '#330033';
       ctx.fillRect(bx - 10, by + 20, 14, 20);
       ctx.fillRect(bx + boss.w - 4, by + 20, 14, 20);
+
+      // Floor spikes
+      for (const sp of boss.spikes) {
+        if (sp.state === 'warn') {
+          const alpha = 0.35 + 0.65 * (sp.t / 0.55);
+          ctx.save();
+          ctx.fillStyle = `rgba(255,30,0,${alpha})`;
+          ctx.font = `bold ${7 + (sp.t / 0.55 * 3) | 0}px Arial, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText('!!!!', sp.x, FLOOR_Y - 4);
+          ctx.fillStyle = `rgba(255,80,0,${alpha * 0.35})`;
+          ctx.fillRect(sp.x - 8, FLOOR_Y - 2, 16, 3);
+          ctx.restore();
+        } else {
+          let prog;
+          if (sp.state === 'up') {
+            prog = Math.min(1, sp.t / 0.28);
+            prog = 1 - (1 - prog) * (1 - prog);   // ease-out rise
+          } else {
+            const f = Math.min(1, sp.t / 0.22);
+            prog = (1 - f) * (1 - f);              // ease-in retract
+          }
+          const spikeH = prog * 38;
+          const spikeTop = FLOOR_Y - spikeH;
+          // Shaft
+          ctx.fillStyle = '#550022';
+          ctx.fillRect(sp.x - 4, spikeTop + 6, 8, spikeH);
+          // Tip triangle
+          ctx.fillStyle = '#ff1155';
+          ctx.beginPath();
+          ctx.moveTo(sp.x - 5, spikeTop + 7);
+          ctx.lineTo(sp.x + 5, spikeTop + 7);
+          ctx.lineTo(sp.x, spikeTop - 6);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
 
       // Balls + warning lines
       for (const p of boss.projectiles) {
