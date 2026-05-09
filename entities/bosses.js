@@ -153,7 +153,7 @@ const Bosses = (() => {
         const w = boss.w, h = boss.h;
         ctx.save();
         ctx.translate(boss.x, boss.y - h / 2);
-        ctx.scale(Math.cos(drillProg * 2 * Math.PI), -1); // Z-axis spin + crown-down
+        ctx.scale(Math.cos(drillProg * drillProg * 2 * Math.PI), -1); // ease-in Z-axis spin + crown-down
         // Body centered at origin
         ctx.fillStyle = '#00aa33';
         ctx.fillRect(-w/2 + 2, -h/2 + 2, w - 4, h - 4);
