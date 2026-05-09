@@ -104,14 +104,18 @@ function setState(s) {
   if (s === STATE.BOSS_INTRO) {
     bossIntroTimer = 2.2;
     startBossFight();
+    Audio.playBossMusic(worldIndex);
   }
   if (s === STATE.WORLD_CLEAR) {
     worldClearTimer = 0;
     if (player) player.hp = Player.MAX_HP;
+    Audio.stopMusic();
+    Audio.playWorldClear();
   }
-  if (s === STATE.DEATH_ANIM) {
-    deathTimer = 0;
-  }
+  if (s === STATE.PLAYING)   Audio.playGameMusic(worldIndex);
+  if (s === STATE.DEATH_ANIM) deathTimer = 0;
+  if (s === STATE.GAME_OVER || s === STATE.WIN) Audio.stopMusic();
+  if (s === STATE.MENU)      Audio.playMenuMusic();
   Input.clearJustPressed();
 }
 
@@ -124,6 +128,7 @@ player = null;
 
 // ─── Update ───────────────────────────────────────────────────────────────────
 function update(dt) {
+  Audio.resume();
   // Pause toggle
   if ((state === STATE.PLAYING || state === STATE.BOSS_FIGHT) && Input.wasPressed('Enter')) {
     prevState = state;
@@ -151,12 +156,12 @@ function update(dt) {
           Slime.update(e, dt, player, level);
           if (e.dead) {
             const splits = Slime.splitSpawns(e);
-            if (splits.length === 0) vigFade = Math.min(10, vigFade + 0.5);
+            if (splits.length === 0) { vigFade = Math.min(10, vigFade + 0.5); Audio.playEnemyDeath(); }
             newEnemies.push(...splits);
           }
         } else if (e.type === 'zombie') {
           Zombie.update(e, dt, player, level);
-          if (e.dead) vigFade = Math.min(10, vigFade + 2);
+          if (e.dead) { vigFade = Math.min(10, vigFade + 2); Audio.playEnemyDeath(); }
         }
       }
       level.enemies = level.enemies.filter(e => !e.dead).concat(newEnemies);

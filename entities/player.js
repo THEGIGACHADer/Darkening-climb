@@ -77,6 +77,7 @@ const Player = (() => {
     bullets.push(Bullet.create3D(p.x + dirX * 0.4, p.y + dirY * 0.4, dirX, dirY));
     p.vx -= dirX * RECOIL;
     p.vy -= dirY * RECOIL;
+    Audio.playShoot();
   }
 
   function update2D(p, dt, bullets, floorY, screenW) {
@@ -111,12 +112,14 @@ const Player = (() => {
     p.shootCooldown = SHOOT_CD;
     bullets.push(Bullet.create2D(p.x2d + p.facing * 12, p.y2d - 8, p.facing));
     p.x2d -= p.facing * 8;
+    Audio.playShoot();
   }
 
   function takeDamage(p, amount, source) {
     p.hp = Math.max(0, p.hp - amount);
     p.flashTimer = 0.25;
     if (source) p.lastHitBy = source;
+    Audio.playHit();
   }
 
   return { create, update3D, update2D, takeDamage, MAX_HP };

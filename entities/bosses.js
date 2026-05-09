@@ -19,6 +19,7 @@ const Bosses = (() => {
     };
     boss.takeDamage = (amt) => {
       boss.hp -= amt;
+      Audio.playBossHit();
       if (boss.hp <= 0) boss.dead = true;
       boss.squishY = 1;
     };
@@ -116,6 +117,7 @@ const Bosses = (() => {
     };
     boss.takeDamage = (amt) => {
       boss.hp -= amt;
+      Audio.playBossHit();
       if (boss.hp <= 0) boss.dead = true;
     };
     boss.update = (dt, player2d) => {
@@ -230,6 +232,7 @@ const Bosses = (() => {
     };
     boss.takeDamage = (amt) => {
       boss.hp -= amt;
+      Audio.playBossHit();
       if (boss.hp <= 0) boss.dead = true;
     };
     boss.update = (dt, player2d) => {
@@ -337,6 +340,7 @@ const Bosses = (() => {
     };
     boss.takeDamage = (amt) => {
       boss.hp -= amt;
+      Audio.playBossHit();
       if (boss.hp <= 0) boss.dead = true;
     };
     boss.update = (dt, player2d) => {
