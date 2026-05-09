@@ -177,7 +177,6 @@ const Bosses = (() => {
         ctx.restore();
       } else {
         const atCeiling = cs === 'ceiling';
-        const isReturnUp = cs === 'returnUp';
         const inAir = cs !== 'floor';
 
         const sy = boss.squishY;
@@ -214,16 +213,6 @@ const Bosses = (() => {
           ctx.lineTo(boss.x - 6,  by - 3); ctx.lineTo(boss.x, by - 9);
           ctx.lineTo(boss.x + 6,  by - 3); ctx.lineTo(boss.x + 12, by - 6);
           ctx.lineTo(boss.x + 12, by); ctx.fill();
-        }
-
-        if (isReturnUp) {
-          ctx.fillStyle = '#55ff88';
-          ctx.beginPath();
-          ctx.moveTo(boss.x - 5, boss.y);
-          ctx.lineTo(boss.x + 5, boss.y);
-          ctx.lineTo(boss.x, boss.y + 14);
-          ctx.closePath();
-          ctx.fill();
         }
 
         if (atCeiling) {
