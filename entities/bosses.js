@@ -7,7 +7,7 @@ const Bosses = (() => {
     const boss = {
       name: 'SLIME QUEEN',
       x: W2D * 0.7, y: FLOOR_Y,
-      w: 64, h: 48,
+      w: 16, h: 12,
       hp: 300, maxHp: 300,
       dead: false,
       phase: 1,
@@ -71,30 +71,30 @@ const Bosses = (() => {
     };
     boss.draw = (ctx) => {
       const sy = boss.squishY;
-      const w = boss.w + sy * 20, h = boss.h - sy * 12;
+      const w = boss.w + sy * 5, h = boss.h - sy * 3;
       const bx = boss.x - w / 2, by = boss.y - h;
       ctx.fillStyle = '#00aa33';
-      ctx.fillRect(bx + 2, by + 2, w - 4, h - 4);
+      ctx.fillRect(bx + 1, by + 1, w - 2, h - 2);
       ctx.fillStyle = '#22ee55';
       ctx.fillRect(bx, by, w, h);
       // Highlight
       ctx.fillStyle = '#55ff88';
-      ctx.fillRect(bx + 6, by + 4, w / 3, 6);
+      ctx.fillRect(bx + 2, by + 1, w / 3, 2);
       // Eyes
       ctx.fillStyle = '#fff';
-      ctx.fillRect(bx + 12, by + h * 0.3, 10, 10);
-      ctx.fillRect(bx + w - 22, by + h * 0.3, 10, 10);
+      ctx.fillRect(bx + 3, by + h * 0.3, 3, 3);
+      ctx.fillRect(bx + w - 6, by + h * 0.3, 3, 3);
       ctx.fillStyle = '#000';
-      ctx.fillRect(bx + 15, by + h * 0.3 + 3, 5, 5);
-      ctx.fillRect(bx + w - 19, by + h * 0.3 + 3, 5, 5);
+      ctx.fillRect(bx + 4, by + h * 0.3 + 1, 1, 1);
+      ctx.fillRect(bx + w - 5, by + h * 0.3 + 1, 1, 1);
       // Crown
       ctx.fillStyle = '#ffdd00';
       const cx = boss.x;
       ctx.beginPath();
-      ctx.moveTo(cx - 20, by); ctx.lineTo(cx - 20, by - 10);
-      ctx.lineTo(cx - 10, by - 5); ctx.lineTo(cx, by - 14);
-      ctx.lineTo(cx + 10, by - 5); ctx.lineTo(cx + 20, by - 10);
-      ctx.lineTo(cx + 20, by); ctx.fill();
+      ctx.moveTo(cx - 5, by); ctx.lineTo(cx - 5, by - 3);
+      ctx.lineTo(cx - 2, by - 1); ctx.lineTo(cx, by - 4);
+      ctx.lineTo(cx + 2, by - 1); ctx.lineTo(cx + 5, by - 3);
+      ctx.lineTo(cx + 5, by); ctx.fill();
     };
     return boss;
   }
