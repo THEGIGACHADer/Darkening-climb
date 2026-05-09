@@ -23,6 +23,7 @@ const Player = (() => {
       flashTimer: 0,
       facing: 1,
       lastHitBy: null,
+      boostTimer: 0,
       y2d: 0, vy2d: 0, onGround: false, x2d: 0,
     };
   }
@@ -53,17 +54,31 @@ const Player = (() => {
     const mlen = Math.sqrt(mx*mx + my*my);
     if (mlen > 0) { mx /= mlen; my /= mlen; }
 
-    const dx = (mx * SPEED + p.vx) * dt;
-    const dy = (my * SPEED + p.vy) * dt;
+    const boosted = p.boostTimer > 0;
+    const spd = boosted ? SPEED * 2.5 : SPEED;
+    const dx = (mx * spd + p.vx) * dt;
+    const dy = (my * spd + p.vy) * dt;
     const nx = p.x + dx, ny = p.y + dy;
 
-    if (canMove(level, nx, p.y)) p.x = nx; else p.vx = 0;
-    if (canMove(level, p.x, ny)) p.y = ny; else p.vy = 0;
+    if (canMove(level, nx, p.y)) {
+      p.x = nx;
+    } else {
+      if (boosted && p.hp > 0) { p.hp = 0; p.lastHitBy = 'kinetic'; }
+      p.vx = 0;
+    }
+    if (canMove(level, p.x, ny)) {
+      p.y = ny;
+    } else {
+      if (boosted && p.hp > 0) { p.hp = 0; p.lastHitBy = 'kinetic'; }
+      p.vy = 0;
+    }
 
     p.vx *= FRICTION;
     p.vy *= FRICTION;
     if (Math.abs(p.vx) < 0.01) p.vx = 0;
     if (Math.abs(p.vy) < 0.01) p.vy = 0;
+
+    if (p.boostTimer > 0) p.boostTimer = Math.max(0, p.boostTimer - dt);
 
     p.shootCooldown = Math.max(0, p.shootCooldown - dt);
     if ((Input.wasPressed('Space') || Input.wasPressed('ArrowUp')) && p.shootCooldown === 0) shoot3D(p, bullets);

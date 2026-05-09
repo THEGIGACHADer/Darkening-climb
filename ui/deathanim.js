@@ -11,6 +11,7 @@ const DeathAnim = (() => {
       case 'zombieKing':   drawKingFlick(ctx, t);        break;
       case 'necromancer':  drawNecroSummon(ctx, t);      break;
       case 'darkOverlord': drawOverlordBlackout(ctx, t); break;
+      case 'kinetic':      drawKineticDeath(ctx, t);    break;
       default:             drawDarkness(ctx, t);         break;
     }
 
@@ -354,6 +355,65 @@ const DeathAnim = (() => {
       };
       eyeGlow(cx - 22, cy);
       eyeGlow(cx + 22, cy);
+    }
+  }
+
+  // ── 8. Kinetic Death ────────────────────────────────────────────────────────
+  function drawKineticDeath(ctx, t) {
+    const cx = W / 2, cy = H / 2;
+    const IMPACT = 0.28;
+
+    if (t < IMPACT) {
+      // Player rockets right
+      const prog = t / IMPACT;
+      const px = cx + prog * prog * (W * 0.5 + 30);
+      arrow(ctx, px, cy, 1.0, Math.PI / 2, 1.0);
+      // Speed lines trailing left
+      ctx.save();
+      ctx.strokeStyle = `rgba(255,220,50,${0.8 * (1 - prog)})`;
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 6; i++) {
+        const ly = cy - 14 + i * 6;
+        ctx.beginPath();
+        ctx.moveTo(px - 55 - i * 10, ly);
+        ctx.lineTo(px - 14, ly);
+        ctx.stroke();
+      }
+      ctx.restore();
+    } else {
+      // Impact — squashed against wall
+      const sq = Math.min(1, (t - IMPACT) / 0.18);
+      ctx.save();
+      ctx.translate(W - 8, cy);
+      ctx.scale(Math.max(0.04, 1 - sq * 0.96), 1 + sq * 0.7);
+      ctx.translate(-(W - 8), -cy);
+      arrow(ctx, W - 8, cy, 0.9, Math.PI / 2, Math.max(0, 1 - (sq - 0.4) * 2.5));
+      ctx.restore();
+      // Burst rays from impact point
+      if (sq < 0.75) {
+        const burst = sq / 0.75;
+        ctx.strokeStyle = `rgba(255,160,0,${(1 - burst) * 0.9})`;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 10; i++) {
+          const a = (i / 10) * Math.PI * 2;
+          const r = 10 + burst * 42;
+          ctx.beginPath();
+          ctx.moveTo(W - 8 + Math.cos(a) * 8, cy + Math.sin(a) * 8);
+          ctx.lineTo(W - 8 + Math.cos(a) * r, cy + Math.sin(a) * r * 0.55);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Flavor text
+    if (t > 0.52) {
+      const alpha = Math.min(1, (t - 0.52) / 0.22);
+      ctx.save();
+      ctx.fillStyle = `rgba(255,220,50,${alpha})`;
+      ctx.font = '8px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('You discovered kinetic energy', cx, cy + 52);
+      ctx.restore();
     }
   }
 

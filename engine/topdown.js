@@ -86,6 +86,26 @@ const TopDown = (() => {
       }
     }
 
+    // Speed boost pickups
+    const now = Date.now();
+    const pulse = 0.65 + 0.35 * Math.sin(now / 180);
+    for (const b of (level.boosts || [])) {
+      const bx = b.x * TS, by = b.y * TS;
+      ctx.fillStyle = `rgba(255,220,30,${pulse})`;
+      ctx.beginPath();
+      ctx.arc(bx, by, TS * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255,255,120,${pulse * 0.7})`;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + now / 700;
+        ctx.beginPath();
+        ctx.moveTo(bx + Math.cos(a) * TS * 0.33, by + Math.sin(a) * TS * 0.33);
+        ctx.lineTo(bx + Math.cos(a) * TS * 0.46, by + Math.sin(a) * TS * 0.46);
+        ctx.stroke();
+      }
+    }
+
     // Bullets
     ctx.fillStyle = '#ffee44';
     for (const b of bullets) {
@@ -136,6 +156,18 @@ const TopDown = (() => {
     vig.addColorStop(1, 'rgba(0,0,0,1)');
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, W, H);
+
+    // Speed boost indicator
+    if (player.boostTimer > 0) {
+      const a = Math.min(1, player.boostTimer * 2);
+      ctx.save();
+      ctx.fillStyle = `rgba(255,220,30,${a})`;
+      ctx.font = 'bold 10px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('>> SPEED BOOST <<', W / 2, 18);
+      ctx.textAlign = 'left';
+      ctx.restore();
+    }
 
     // Hit flash overlay
     if (flashAlpha > 0) {

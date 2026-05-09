@@ -200,6 +200,9 @@ function update(dt) {
       for (const b of bullets) Bullet.update3D(b, dt, level, level.enemies);
       bullets = bullets.filter(b => !b.dead);
 
+      // Speed boost pickup
+      if (level.collectBoost(player.x, player.y)) player.boostTimer = 4;
+
       // Check exit tile
       if (level.isExit(player.x, player.y)) {
         if (level.isBossLevel) {

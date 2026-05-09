@@ -300,6 +300,21 @@ const _LAYOUTS = [
   },
 ];
 
+// ─── Boost placement ─────────────────────────────────────────────────────────
+function _placeBoosts(g, rng) {
+  const cells = [];
+  for (let r = 0; r < _IH; r++)
+    for (let c = 0; c < _IW; c++)
+      if (g[r][c] === '.' && !(r < 4 && c < 4) && !(r >= _IH - 4 && c >= _IW - 4))
+        cells.push([r, c]);
+  const count = 1 + (rng() < 0.55 ? 1 : 0);
+  for (let i = 0; i < count && cells.length > 0; i++) {
+    const idx = rng() * cells.length | 0;
+    const [r, c] = cells.splice(idx, 1)[0];
+    g[r][c] = 'B';
+  }
+}
+
 // ─── Enemy placement ─────────────────────────────────────────────────────────
 function _placeEnemies(g, rng, worldIndex, levelInWorld) {
   const cells = [];
@@ -351,6 +366,7 @@ function getLevelDef(levelIndex) {
   layout.fn(g, rng);
   _clearZones(g);
   _placeEnemies(g, rng, worldIndex, levelInWorld);
+  _placeBoosts(g, rng);
 
   return {
     worldIndex,
