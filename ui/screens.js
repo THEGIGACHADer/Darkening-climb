@@ -143,7 +143,9 @@ const Screens = (() => {
       ctx.fillText(`[ ] Speed: ${devInfo.speedMult.toFixed(2)}x`, 16, 143);
       const godOn = devInfo.invincible && devInfo.noclip && devInfo.noDarkness;
       ctx.fillStyle = godOn ? '#ffaa00' : '#446644';
-      ctx.fillText('[G] GOD MODE', 190, 143);
+      ctx.fillText('[G] GOD', 190, 143);
+      ctx.fillStyle = '#ff4444';
+      ctx.fillText('[K] INSTAKILL', 240, 143);
 
       // Divider
       ctx.strokeStyle = '#224422';

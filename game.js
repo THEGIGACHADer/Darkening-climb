@@ -178,6 +178,11 @@ function update(dt) {
       if (!allOn) devSpeedMult = 3.0; else devSpeedMult = 1.0;
       return;
     }
+    if (Input.wasPressed('KeyK')) {
+      if (prevState === STATE.PLAYING && level) level.enemies.forEach(e => { e.dead = true; });
+      if (prevState === STATE.BOSS_FIGHT && boss) { boss.hp = 0; boss.dead = true; }
+      return;
+    }
     if (Input.wasPressed('KeyI')) { devInvincible = !devInvincible; return; }
     if (Input.wasPressed('KeyN')) { devNoclip     = !devNoclip;     return; }
     if (Input.wasPressed('KeyF')) { devNoDarkness = !devNoDarkness; return; }
