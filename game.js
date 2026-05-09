@@ -107,6 +107,7 @@ function setState(s) {
   }
   if (s === STATE.WORLD_CLEAR) {
     worldClearTimer = 0;
+    if (player) player.hp = Player.MAX_HP;
   }
   if (s === STATE.DEATH_ANIM) {
     deathTimer = 0;
