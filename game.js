@@ -258,7 +258,9 @@ function update(dt) {
       break;
 
     case STATE.BOSS_FIGHT: {
+      player.devSpeedMult = devSpeedMult;
       Player.update2D(player, dt, bullets, FLOOR_Y_2D, INTERNAL_W);
+      if (devInvincible) player.hp = Player.MAX_HP;
 
       // Update boss
       if (boss && !boss.dead) {
@@ -275,7 +277,7 @@ function update(dt) {
       }
 
       // Game over
-      if (player.hp <= 0) {
+      if (!devInvincible && player.hp <= 0) {
         const bossDeathCauses = ['slimeQueen', 'zombieKing', 'necromancer', 'darkOverlord'];
         deathCause = bossDeathCauses[worldIndex] || 'darkness';
         setState(STATE.DEATH_ANIM);

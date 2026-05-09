@@ -96,8 +96,9 @@ const Player = (() => {
   }
 
   function update2D(p, dt, bullets, floorY, screenW) {
-    if (Input.isDown('KeyA')) { p.x2d -= SPD_2D * dt; p.facing = -1; }
-    if (Input.isDown('KeyD')) { p.x2d += SPD_2D * dt; p.facing =  1; }
+    const spd2d = SPD_2D * (p.devSpeedMult || 1);
+    if (Input.isDown('KeyA')) { p.x2d -= spd2d * dt; p.facing = -1; }
+    if (Input.isDown('KeyD')) { p.x2d += spd2d * dt; p.facing =  1; }
 
     if (Input.wasPressed('KeyW') && p.onGround) {
       p.vy2d = JUMP_VEL;
