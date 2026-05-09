@@ -16,6 +16,11 @@ const Bosses = (() => {
       shootTimer: 0,
       bounceDir: 1,
       squishY: 0,
+      // Ceiling attack
+      ceilingState: 'floor',   // 'floor'|'ascending'|'ceiling'|'drilling'|'returnUp'|'returnDn'
+      ceilingPhaseT: 0,
+      ceilingTimer: 8,
+      drillHit: false,
     };
     boss.takeDamage = (amt) => {
       boss.hp -= amt;
@@ -30,37 +35,107 @@ const Bosses = (() => {
       if (pct < 0.5) boss.phase = 2;
       if (pct < 0.25) boss.phase = 3;
 
-      // Bounce horizontally
-      const spd = 40 + (3 - boss.phase) * 0 + boss.phase * 15;
-      boss.x += boss.bounceDir * spd * dt;
-      if (boss.x > W2D - 40) boss.bounceDir = -1;
-      if (boss.x < 40) boss.bounceDir = 1;
+      if (boss.ceilingState === 'floor') {
+        // Bounce horizontally
+        const spd = 40 + boss.phase * 15;
+        boss.x += boss.bounceDir * spd * dt;
+        if (boss.x > W2D - 40) boss.bounceDir = -1;
+        if (boss.x < 40) boss.bounceDir = 1;
 
-      // Shoot acid drops
-      boss.shootTimer -= dt;
-      const interval = boss.phase === 1 ? 2.0 : boss.phase === 2 ? 1.2 : 0.7;
-      if (boss.shootTimer <= 0) {
-        boss.shootTimer = interval;
-        const count = boss.phase;
-        for (let i = 0; i < count; i++) {
-          const angle = -Math.PI / 2 + (i - (count - 1) / 2) * 0.4;
-          boss.projectiles.push({
-            x: boss.x, y: boss.y - boss.h,
-            vx: Math.cos(angle) * 80,
-            vy: Math.sin(angle) * 60,
-            dead: false,
-          });
+        // Shoot acid drops
+        boss.shootTimer -= dt;
+        const interval = boss.phase === 1 ? 2.0 : boss.phase === 2 ? 1.2 : 0.7;
+        if (boss.shootTimer <= 0) {
+          boss.shootTimer = interval;
+          const count = boss.phase;
+          for (let i = 0; i < count; i++) {
+            const angle = -Math.PI / 2 + (i - (count - 1) / 2) * 0.4;
+            boss.projectiles.push({
+              x: boss.x, y: boss.y - boss.h,
+              vx: Math.cos(angle) * 80,
+              vy: Math.sin(angle) * 60,
+              dead: false,
+            });
+          }
+        }
+
+        // Trigger ceiling climb
+        boss.ceilingTimer -= dt;
+        if (boss.ceilingTimer <= 0) {
+          boss.ceilingState = 'ascending';
+          boss.ceilingPhaseT = 0;
+        }
+
+      } else if (boss.ceilingState === 'ascending') {
+        boss.ceilingPhaseT += dt;
+        const t = Math.min(1, boss.ceilingPhaseT / 0.4);
+        const e = 1 - (1 - t) * (1 - t);          // ease-out
+        boss.y = FLOOR_Y + (boss.h - FLOOR_Y) * e;
+        if (t >= 1) {
+          boss.y = boss.h;
+          boss.ceilingState = 'ceiling';
+          boss.ceilingPhaseT = 0;
+        }
+
+      } else if (boss.ceilingState === 'ceiling') {
+        boss.ceilingPhaseT += dt;
+        const hangDur = boss.phase === 1 ? 1.5 : boss.phase === 2 ? 1.2 : 0.9;
+        // Slowly track player X
+        const ceilSpd = 50 + boss.phase * 10;
+        const tdx = player2d.x2d - boss.x;
+        boss.x += Math.sign(tdx) * Math.min(Math.abs(tdx), ceilSpd * dt);
+        boss.x = Math.max(boss.w * 0.6, Math.min(W2D - boss.w * 0.6, boss.x));
+        if (boss.ceilingPhaseT >= hangDur) {
+          boss.ceilingState = 'drilling';
+          boss.drillHit = false;
+        }
+
+      } else if (boss.ceilingState === 'drilling') {
+        boss.y += 280 * dt;
+        if (!boss.drillHit) {
+          const pdx = Math.abs(boss.x - player2d.x2d);
+          const pdy = Math.abs(boss.y - player2d.y2d);
+          if (pdx < boss.w * 0.5 + 5 && pdy < 20) {
+            Player.takeDamage(player2d, 22);
+            boss.drillHit = true;
+          }
+        }
+        if (boss.y >= FLOOR_Y) {
+          boss.y = FLOOR_Y;
+          boss.squishY = 1;
+          boss.ceilingState = 'returnUp';
+          boss.ceilingPhaseT = 0;
+        }
+
+      } else if (boss.ceilingState === 'returnUp') {
+        boss.ceilingPhaseT += dt;
+        const t = Math.min(1, boss.ceilingPhaseT / 0.35);
+        const e = 1 - (1 - t) * (1 - t);          // ease-out
+        boss.y = FLOOR_Y + (boss.h - FLOOR_Y) * e;
+        if (t >= 1) {
+          boss.y = boss.h;
+          boss.ceilingState = 'returnDn';
+          boss.ceilingPhaseT = 0;
+        }
+
+      } else if (boss.ceilingState === 'returnDn') {
+        boss.ceilingPhaseT += dt;
+        const t = Math.min(1, boss.ceilingPhaseT / 0.55);
+        const e = t * t;                            // ease-in
+        boss.y = boss.h + (FLOOR_Y - boss.h) * e;
+        if (t >= 1) {
+          boss.y = FLOOR_Y;
+          boss.ceilingState = 'floor';
+          boss.ceilingTimer = boss.phase === 1 ? 9 : boss.phase === 2 ? 6 : 4;
         }
       }
 
-      // Update projectiles
+      // Update projectiles (always)
       for (const p of boss.projectiles) {
         p.x += p.vx * dt;
         p.y += p.vy * dt;
-        p.vy += 150 * dt; // gravity on drops
+        p.vy += 150 * dt;
         if (p.y > FLOOR_Y + 20) p.dead = true;
-
-        // Hit player
         const dx = p.x - player2d.x2d, dy = p.y - player2d.y2d;
         if (Math.abs(dx) < 10 && Math.abs(dy) < 12 && !p.dead) {
           Player.takeDamage(player2d, 8);
@@ -70,31 +145,84 @@ const Bosses = (() => {
       boss.projectiles = boss.projectiles.filter(p => !p.dead);
     };
     boss.draw = (ctx) => {
+      const cs = boss.ceilingState;
+      const atCeiling = cs === 'ceiling';
+      const drilling  = cs === 'drilling' || cs === 'returnUp';
+      const inAir     = cs !== 'floor';
+
       const sy = boss.squishY;
-      const w = boss.w + sy * 12, h = boss.h - sy * 7;
+      let w = boss.w + sy * 12, h = boss.h - sy * 7;
+      if (atCeiling) { w = (boss.w * 1.25) | 0; h = (boss.h * 0.75) | 0; }
+      else if (drilling) { w = (boss.w * 0.55) | 0; h = (boss.h * 1.7) | 0; }
+
       const bx = boss.x - w / 2, by = boss.y - h;
+
+      // Flip upside-down when hanging at ceiling
+      if (atCeiling) {
+        ctx.save();
+        const midY = boss.y - h / 2;
+        ctx.translate(0, midY * 2);
+        ctx.scale(1, -1);
+      }
+
       ctx.fillStyle = '#00aa33';
       ctx.fillRect(bx + 2, by + 2, w - 4, h - 4);
       ctx.fillStyle = '#22ee55';
       ctx.fillRect(bx, by, w, h);
-      // Highlight
       ctx.fillStyle = '#55ff88';
       ctx.fillRect(bx + 4, by + 3, w / 3, 4);
-      // Eyes
       ctx.fillStyle = '#fff';
       ctx.fillRect(bx + 7, by + h * 0.3, 6, 6);
       ctx.fillRect(bx + w - 13, by + h * 0.3, 6, 6);
       ctx.fillStyle = '#000';
       ctx.fillRect(bx + 9, by + h * 0.3 + 2, 3, 3);
       ctx.fillRect(bx + w - 11, by + h * 0.3 + 2, 3, 3);
-      // Crown
-      ctx.fillStyle = '#ffdd00';
-      const cx = boss.x;
-      ctx.beginPath();
-      ctx.moveTo(cx - 12, by); ctx.lineTo(cx - 12, by - 6);
-      ctx.lineTo(cx - 6,  by - 3); ctx.lineTo(cx, by - 9);
-      ctx.lineTo(cx + 6,  by - 3); ctx.lineTo(cx + 12, by - 6);
-      ctx.lineTo(cx + 12, by); ctx.fill();
+
+      if (atCeiling) ctx.restore();
+
+      // Crown only on floor
+      if (!inAir) {
+        ctx.fillStyle = '#ffdd00';
+        const cx = boss.x;
+        ctx.beginPath();
+        ctx.moveTo(cx - 12, by); ctx.lineTo(cx - 12, by - 6);
+        ctx.lineTo(cx - 6,  by - 3); ctx.lineTo(cx, by - 9);
+        ctx.lineTo(cx + 6,  by - 3); ctx.lineTo(cx + 12, by - 6);
+        ctx.lineTo(cx + 12, by); ctx.fill();
+      }
+
+      // Drill spike when falling/returning up
+      if (drilling) {
+        ctx.fillStyle = '#55ff88';
+        ctx.beginPath();
+        ctx.moveTo(boss.x - 5, boss.y);
+        ctx.lineTo(boss.x + 5, boss.y);
+        ctx.lineTo(boss.x, boss.y + 14);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Dashed targeting line when hanging at ceiling
+      if (atCeiling) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0,255,100,0.5)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(boss.x, boss.y);
+        ctx.lineTo(boss.x, FLOOR_Y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
+      // Projectile acid drops
+      ctx.fillStyle = '#00ee44';
+      for (const p of boss.projectiles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
     };
     return boss;
   }
@@ -325,7 +453,7 @@ const Bosses = (() => {
   // ─── Dark Overlord ────────────────────────────────────────────────────────────
   function darkOverlord() {
     const HOVER_Y     = 30;                                 // Y balls hover at
-    const HOVER_TIME  = 2.0;                                // seconds tracking player X
+    const HOVER_TIME  = 1.5;                                // seconds tracking player X
     const SMASH_SPEED = (FLOOR_Y - HOVER_Y) / 1.0;         // px/s — reaches floor in 1s
 
     const boss = {
@@ -374,14 +502,14 @@ const Bosses = (() => {
           if (boss.shotsLeft > 0) {
             boss.shotGapTimer = 0.1;
           } else {
-            const cooldown = boss.phase === 1 ? 4.0 : boss.phase === 2 ? 3.0 : 2.0;
+            const cooldown = boss.phase === 1 ? 3.5 : boss.phase === 2 ? 2.5 : 1.5;
             boss.shootCooldown = cooldown;
           }
         }
       } else {
         boss.shootCooldown -= dt;
         if (boss.shootCooldown <= 0) {
-          boss.shotsLeft   = 2 + boss.phase;  // 3 / 4 / 5
+          boss.shotsLeft   = 3 + boss.phase;  // 4 / 5 / 6
           boss.shotGapTimer = 0;
         }
       }
