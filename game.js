@@ -36,6 +36,7 @@ resize();
 // ─── Game state ───────────────────────────────────────────────────────────────
 let state, prevState;
 let devPanelOpen = false;
+let devDeathIndex = 0;
 let player, level, bullets, boss;
 let levelIndex, worldIndex, levelInWorld;
 let bossIntroTimer;
@@ -144,6 +145,17 @@ function update(dt) {
   if (state === STATE.PAUSED && Input.wasPressed('KeyD')) {
     devPanelOpen = !devPanelOpen;
     return;
+  }
+  if (state === STATE.PAUSED && devPanelOpen) {
+    const n = Screens.DEATH_NAMES.length;
+    if (Input.wasPressed('ArrowLeft'))  { devDeathIndex = (devDeathIndex - 1 + n) % n; return; }
+    if (Input.wasPressed('ArrowRight')) { devDeathIndex = (devDeathIndex + 1) % n;      return; }
+    if (Input.wasPressed('KeyT')) {
+      deathCause = Screens.DEATH_NAMES[devDeathIndex];
+      devPanelOpen = false;
+      setState(STATE.DEATH_ANIM);
+      return;
+    }
   }
 
   switch (state) {
@@ -353,15 +365,16 @@ function render() {
       const tmp = document.createElement('canvas');
       tmp.width = INTERNAL_W; tmp.height = INTERNAL_H;
       const devInfo = devPanelOpen ? {
-        hp:      player ? player.hp | 0 : 0,
-        maxHp:   Player.MAX_HP,
-        world:   worldIndex,
-        level:   levelInWorld,
-        enemies: level ? level.enemies.filter(e => !e.dead).length : 0,
-        px:      player ? player.x.toFixed(1) : 0,
-        py:      player ? player.y.toFixed(1) : 0,
-        vig:     vigFade ? vigFade.toFixed(2) : '—',
-        bossHp:  boss ? `${boss.hp | 0}/${boss.maxHp}` : '—',
+        hp:         player ? player.hp | 0 : 0,
+        maxHp:      Player.MAX_HP,
+        world:      worldIndex,
+        level:      levelInWorld,
+        enemies:    level ? level.enemies.filter(e => !e.dead).length : 0,
+        px:         player ? player.x.toFixed(1) : 0,
+        py:         player ? player.y.toFixed(1) : 0,
+        vig:        vigFade ? vigFade.toFixed(2) : '—',
+        bossHp:     boss ? `${boss.hp | 0}/${boss.maxHp}` : '—',
+        deathIndex: devDeathIndex,
       } : null;
       Screens.drawPaused(tmp.getContext('2d'), devInfo);
       ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);

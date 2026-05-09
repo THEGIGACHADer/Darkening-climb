@@ -106,32 +106,50 @@ const Screens = (() => {
     }
   }
 
+  const DEATH_NAMES = ['slime', 'zombie', 'darkness', 'slimeQueen', 'zombieKing', 'necromancer', 'darkOverlord'];
+
   function drawPaused(ctx, devInfo) {
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(0, 0, W, H);
-    centeredText(ctx, 'PAUSED', 95, 16, '#cccccc');
-    centeredText(ctx, 'ENTER to resume', 120, 7, '#888877');
-    centeredText(ctx, 'D  —  See all things important  (DEVS ONLY)', 140, 5, '#445544');
+    centeredText(ctx, 'PAUSED', 88, 16, '#cccccc');
+    centeredText(ctx, 'ENTER to resume', 110, 7, '#888877');
+    centeredText(ctx, 'D  —  See all things important  (DEVS ONLY)', 126, 5, '#445544');
 
     if (devInfo) {
       // Dev panel background
       ctx.fillStyle = 'rgba(0,20,0,0.92)';
-      ctx.fillRect(10, 150, W - 20, 45);
+      ctx.fillRect(10, 134, W - 20, 62);
       ctx.strokeStyle = '#224422';
       ctx.lineWidth = 1;
-      ctx.strokeRect(10, 150, W - 20, 45);
+      ctx.strokeRect(10, 134, W - 20, 62);
 
+      // Stats
       ctx.font = '5px monospace';
       ctx.fillStyle = '#44ff44';
-      const lines = [
-        `HP: ${devInfo.hp}/${devInfo.maxHp}  |  World: ${devInfo.world + 1}  Level: ${devInfo.level + 1}  |  Enemies: ${devInfo.enemies}`,
-        `Pos: (${devInfo.px}, ${devInfo.py})  |  Vignette: ${devInfo.vig}  |  Boss HP: ${devInfo.bossHp}`,
-      ];
-      lines.forEach((line, i) => {
-        ctx.fillText(line, 16, 163 + i * 12);
-      });
+      ctx.fillText(`HP: ${devInfo.hp}/${devInfo.maxHp}  |  World: ${devInfo.world + 1}  Level: ${devInfo.level + 1}  |  Enemies: ${devInfo.enemies}`, 16, 146);
+      ctx.fillText(`Pos: (${devInfo.px}, ${devInfo.py})  |  Vignette: ${devInfo.vig}  |  Boss HP: ${devInfo.bossHp}`, 16, 158);
+
+      // Divider
+      ctx.strokeStyle = '#224422';
+      ctx.beginPath(); ctx.moveTo(14, 164); ctx.lineTo(W - 14, 164); ctx.stroke();
+
+      // Death selector
+      ctx.fillStyle = '#886600';
+      ctx.fillText('TRIGGER DEATH:', 16, 174);
+
+      const name = DEATH_NAMES[devInfo.deathIndex];
+      const label = `< ${name} >`;
+      ctx.fillStyle = '#ffcc00';
+      ctx.font = '6px monospace';
+      centeredText(ctx, label, 186, 6, '#ffcc00');
+
+      ctx.font = '5px monospace';
+      ctx.fillStyle = '#886600';
+      centeredText(ctx, '← → to pick   T to trigger', 194, 5, '#664400');
     }
   }
+
+  return { drawMenu, drawGameOver, drawWorldClear, drawWin, drawBossIntro, drawPaused, DEATH_NAMES };
 
   return { drawMenu, drawGameOver, drawWorldClear, drawWin, drawBossIntro, drawPaused };
 })();
