@@ -100,6 +100,37 @@ const Renderer2D = (() => {
     ctx.fill();
   }
 
+  function vineStrand(x0, y0, cpx, cpy, x1, y1) {
+    ctx.strokeStyle = 'rgba(30, 80, 18, 0.82)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.quadraticCurveTo(cpx, cpy, x1, y1);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(44, 104, 24, 0.78)';
+    for (let i = 0; i < 3; i++) {
+      const t = (i + 0.5) / 3;
+      const lx = (1-t)*(1-t)*x0 + 2*(1-t)*t*cpx + t*t*x1;
+      const ly = (1-t)*(1-t)*y0 + 2*(1-t)*t*cpy + t*t*y1;
+      const side = i % 2 === 0 ? 1 : -1;
+      ctx.beginPath();
+      ctx.moveTo(lx, ly);
+      ctx.quadraticCurveTo(lx + side * 8, ly - 1, lx + side * 6, ly + 7);
+      ctx.quadraticCurveTo(lx + side * 1, ly + 6, lx, ly);
+      ctx.fill();
+    }
+  }
+
+  function drawSideVines() {
+    // Left wall
+    vineStrand(6,  0,  14, 38, 10,  72);
+    vineStrand(18, 0,   8, 50, 20,  90);
+    // Right wall
+    vineStrand(W - 6,  0, W - 14, 42, W - 10, 68);
+    vineStrand(W - 18, 0, W -  8, 48, W - 22, 85);
+  }
+
   function drawTorches() {
     // Atmospheric torches on the back wall
     const positions = [W * 0.28, W * 0.72];
@@ -172,8 +203,9 @@ const Renderer2D = (() => {
     // 3. Side depth walls
     drawSideWalls();
 
-    // 4. Atmosphere (torches)
+    // 4. Atmosphere (torches + vines)
     drawTorches();
+    drawSideVines();
 
     // 5. Boss
     if (boss) boss.draw(ctx, W, H);

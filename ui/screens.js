@@ -8,28 +8,58 @@ const Screens = (() => {
     ctx.fillText(text, (W - ctx.measureText(text).width) / 2, y);
   }
 
+  function vineCluster(ctx, x, len) {
+    // Stone block anchored to top edge
+    ctx.fillStyle = '#4a5a44';
+    ctx.fillRect(x, 0, 11, 6);
+    ctx.fillStyle = '#333d30';
+    ctx.fillRect(x + 1, 1, 9, 4);
+    // Vine stem
+    ctx.fillStyle = '#2a5018';
+    ctx.fillRect(x + 4, 6, 2, len);
+    // Alternating leaves along stem
+    for (let ly = 10; ly < 6 + len - 2; ly += 6) {
+      const left = (Math.floor(ly / 6) % 2 === 0);
+      ctx.fillStyle = '#3a7020';
+      ctx.fillRect(x + (left ? 0 : 7), ly, 4, 2);
+      ctx.fillStyle = '#4a8a28';
+      ctx.fillRect(x + (left ? 1 : 8), ly, 2, 1);
+    }
+  }
+
   function drawMenu(ctx) {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, W, H);
+
+    // Vine clusters hanging from top
+    vineCluster(ctx, 5,  30);
+    vineCluster(ctx, 88, 20);
+    vineCluster(ctx, 213, 24);
+    vineCluster(ctx, 292, 28);
+
     // Title
-    centeredText(ctx, 'DARK  DUNGEON', 55, 14, '#cc2200');
-    centeredText(ctx, 'DARK  DUNGEON', 54, 14, '#ff4422');
+    centeredText(ctx, 'DARKENING CLIMB', 55, 14, '#cc2200');
+    centeredText(ctx, 'DARKENING CLIMB', 54, 14, '#ff4422');
     // Subtitle
     centeredText(ctx, 'A RETRO PIXEL FPS', 75, 6, '#886655');
-    // Controls
-    ctx.fillStyle = '#777';
-    ctx.font = '5px monospace';
+
+    // Controls header
+    centeredText(ctx, 'CONTROLS', 93, 7, '#557755');
+
+    // Controls rows
     const controls = [
-      'WASD - MOVE / STRAFE',
-      'ARROWS LEFT/RIGHT - ROTATE',
-      'W - JUMP  (boss fights)',
-      'SPACE - SHOOT',
+      'WASD  —  Move & Strafe',
+      '← →  —  Rotate',
+      'W  —  Jump  (boss fights)',
+      'Space  —  Shoot',
+      'Enter  —  Pause',
     ];
     controls.forEach((line, i) => {
-      centeredText(ctx, line, 105 + i * 12, 5, '#777');
+      centeredText(ctx, line, 108 + i * 13, 7, '#bbaa88');
     });
+
     // Prompt (blinks via caller)
-    centeredText(ctx, 'PRESS SPACE TO START', 165, 7, '#ffcc00');
+    centeredText(ctx, 'PRESS SPACE TO START', 168, 7, '#ffcc00');
     // Decorative skulls
     ctx.fillStyle = '#441111';
     ctx.font = '12px monospace';
@@ -76,5 +106,12 @@ const Screens = (() => {
     }
   }
 
-  return { drawMenu, drawGameOver, drawWorldClear, drawWin, drawBossIntro };
+  function drawPaused(ctx) {
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0, 0, W, H);
+    centeredText(ctx, 'PAUSED', 95, 16, '#cccccc');
+    centeredText(ctx, 'ENTER to resume', 120, 7, '#888877');
+  }
+
+  return { drawMenu, drawGameOver, drawWorldClear, drawWin, drawBossIntro, drawPaused };
 })();

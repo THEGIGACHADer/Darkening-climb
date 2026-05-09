@@ -190,6 +190,9 @@ const Raycaster = (() => {
 
     ctx.putImageData(imageData, 0, 0);
 
+    // Vine overlay hanging from ceiling
+    drawCeilingVines(ctx);
+
     // Third-person player model at bottom-center
     drawPlayerModel(ctx, W, H, pitch);
 
@@ -203,6 +206,41 @@ const Raycaster = (() => {
     ctx.stroke();
 
     return offscreen;
+  }
+
+  function drawLeaf(ctx, x, y, side) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(x + side * 9, y - 1, x + side * 7, y + 6);
+    ctx.quadraticCurveTo(x + side * 2, y + 5, x, y);
+    ctx.fill();
+  }
+
+  function drawCeilingVines(ctx) {
+    const strands = [
+      { x: 38,  cp1x: 44,  cp2x: 32,  len: 52 },
+      { x: 112, cp1x: 105, cp2x: 118, len: 34 },
+      { x: 197, cp1x: 205, cp2x: 191, len: 60 },
+      { x: 274, cp1x: 268, cp2x: 280, len: 38 },
+    ];
+
+    for (const s of strands) {
+      const endX = s.x + (s.cp2x - s.x) * 0.6;
+
+      ctx.strokeStyle = 'rgba(28, 72, 16, 0.88)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(s.x, 0);
+      ctx.bezierCurveTo(s.cp1x, s.len * 0.35, s.cp2x, s.len * 0.7, endX, s.len);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(40, 100, 22, 0.82)';
+      for (let t = 0.18; t <= 0.88; t += 0.28) {
+        const lx = (1-t)*(1-t)*s.x + 2*(1-t)*t*s.cp1x + t*t*endX;
+        const ly = s.len * t;
+        drawLeaf(ctx, lx, ly, Math.sin(t * 9) > 0 ? 1 : -1);
+      }
+    }
   }
 
   function drawPlayerModel(ctx, W, H, pitch) {

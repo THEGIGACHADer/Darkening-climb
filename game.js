@@ -5,6 +5,7 @@ const FLOOR_Y_2D = INTERNAL_H * 0.55;
 const STATE = {
   MENU:        'MENU',
   PLAYING:     'PLAYING',
+  PAUSED:      'PAUSED',
   BOSS_INTRO:  'BOSS_INTRO',
   BOSS_FIGHT:  'BOSS_FIGHT',
   WORLD_CLEAR: 'WORLD_CLEAR',
@@ -33,7 +34,7 @@ window.addEventListener('resize', resize);
 resize();
 
 // ─── Game state ───────────────────────────────────────────────────────────────
-let state;
+let state, prevState;
 let player, level, bullets, boss;
 let levelIndex, worldIndex, levelInWorld;
 let bossIntroTimer;
@@ -122,6 +123,17 @@ player = null;
 
 // ─── Update ───────────────────────────────────────────────────────────────────
 function update(dt) {
+  // Pause toggle
+  if ((state === STATE.PLAYING || state === STATE.BOSS_FIGHT) && Input.wasPressed('Enter')) {
+    prevState = state;
+    state = STATE.PAUSED;
+    return;
+  }
+  if (state === STATE.PAUSED && Input.wasPressed('Enter')) {
+    state = prevState;
+    return;
+  }
+
   switch (state) {
 
     case STATE.MENU:
@@ -320,6 +332,15 @@ function render() {
         tc.drawImage(bg, 0, 0, INTERNAL_W, INTERNAL_H);
       }
       Screens.drawGameOver(tc);
+      ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
+      return;
+    }
+
+    case STATE.PAUSED: {
+      if (lastGameOffscreen) ctx.drawImage(lastGameOffscreen, 0, 0, canvas.width, canvas.height);
+      const tmp = document.createElement('canvas');
+      tmp.width = INTERNAL_W; tmp.height = INTERNAL_H;
+      Screens.drawPaused(tmp.getContext('2d'));
       ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
       return;
     }
