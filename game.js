@@ -35,6 +35,7 @@ resize();
 
 // ─── Game state ───────────────────────────────────────────────────────────────
 let state, prevState;
+let devPanelOpen = false;
 let player, level, bullets, boss;
 let levelIndex, worldIndex, levelInWorld;
 let bossIntroTimer;
@@ -136,7 +137,12 @@ function update(dt) {
     return;
   }
   if (state === STATE.PAUSED && Input.wasPressed('Enter')) {
+    devPanelOpen = false;
     state = prevState;
+    return;
+  }
+  if (state === STATE.PAUSED && Input.wasPressed('KeyD')) {
+    devPanelOpen = !devPanelOpen;
     return;
   }
 
@@ -346,7 +352,18 @@ function render() {
       if (lastGameOffscreen) ctx.drawImage(lastGameOffscreen, 0, 0, canvas.width, canvas.height);
       const tmp = document.createElement('canvas');
       tmp.width = INTERNAL_W; tmp.height = INTERNAL_H;
-      Screens.drawPaused(tmp.getContext('2d'));
+      const devInfo = devPanelOpen ? {
+        hp:      player ? player.hp | 0 : 0,
+        maxHp:   Player.MAX_HP,
+        world:   worldIndex,
+        level:   levelInWorld,
+        enemies: level ? level.enemies.filter(e => !e.dead).length : 0,
+        px:      player ? player.x.toFixed(1) : 0,
+        py:      player ? player.y.toFixed(1) : 0,
+        vig:     vigFade ? vigFade.toFixed(2) : '—',
+        bossHp:  boss ? `${boss.hp | 0}/${boss.maxHp}` : '—',
+      } : null;
+      Screens.drawPaused(tmp.getContext('2d'), devInfo);
       ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
       return;
     }

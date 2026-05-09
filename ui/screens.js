@@ -106,11 +106,31 @@ const Screens = (() => {
     }
   }
 
-  function drawPaused(ctx) {
+  function drawPaused(ctx, devInfo) {
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(0, 0, W, H);
     centeredText(ctx, 'PAUSED', 95, 16, '#cccccc');
     centeredText(ctx, 'ENTER to resume', 120, 7, '#888877');
+    centeredText(ctx, 'D  —  See all things important  (DEVS ONLY)', 140, 5, '#445544');
+
+    if (devInfo) {
+      // Dev panel background
+      ctx.fillStyle = 'rgba(0,20,0,0.92)';
+      ctx.fillRect(10, 150, W - 20, 45);
+      ctx.strokeStyle = '#224422';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(10, 150, W - 20, 45);
+
+      ctx.font = '5px monospace';
+      ctx.fillStyle = '#44ff44';
+      const lines = [
+        `HP: ${devInfo.hp}/${devInfo.maxHp}  |  World: ${devInfo.world + 1}  Level: ${devInfo.level + 1}  |  Enemies: ${devInfo.enemies}`,
+        `Pos: (${devInfo.px}, ${devInfo.py})  |  Vignette: ${devInfo.vig}  |  Boss HP: ${devInfo.bossHp}`,
+      ];
+      lines.forEach((line, i) => {
+        ctx.fillText(line, 16, 163 + i * 12);
+      });
+    }
   }
 
   return { drawMenu, drawGameOver, drawWorldClear, drawWin, drawBossIntro, drawPaused };
