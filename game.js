@@ -172,6 +172,12 @@ function update(dt) {
       setState(STATE.BOSS_INTRO);
       return;
     }
+    if (Input.wasPressed('KeyG')) {
+      const allOn = devInvincible && devNoclip && devNoDarkness;
+      devInvincible = devNoclip = devNoDarkness = !allOn;
+      if (!allOn) devSpeedMult = 3.0; else devSpeedMult = 1.0;
+      return;
+    }
     if (Input.wasPressed('KeyI')) { devInvincible = !devInvincible; return; }
     if (Input.wasPressed('KeyN')) { devNoclip     = !devNoclip;     return; }
     if (Input.wasPressed('KeyF')) { devNoDarkness = !devNoDarkness; return; }

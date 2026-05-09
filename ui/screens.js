@@ -138,9 +138,12 @@ const Screens = (() => {
       ctx.fillStyle = devInfo.noclip      ? on : off; ctx.fillText('[N] Noclip',      112, 133);
       ctx.fillStyle = devInfo.noDarkness  ? on : off; ctx.fillText('[F] No Darkness', 190, 133);
 
-      // Speed multiplier
+      // Speed multiplier + god mode
       ctx.fillStyle = devInfo.speedMult !== 1.0 ? '#ffdd44' : '#446644';
       ctx.fillText(`[ ] Speed: ${devInfo.speedMult.toFixed(2)}x`, 16, 143);
+      const godOn = devInfo.invincible && devInfo.noclip && devInfo.noDarkness;
+      ctx.fillStyle = godOn ? '#ffaa00' : '#446644';
+      ctx.fillText('[G] GOD MODE', 190, 143);
 
       // Divider
       ctx.strokeStyle = '#224422';
