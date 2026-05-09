@@ -324,6 +324,10 @@ const Bosses = (() => {
 
   // ─── Dark Overlord ────────────────────────────────────────────────────────────
   function darkOverlord() {
+    const HOVER_Y     = 30;                                 // Y balls hover at
+    const HOVER_TIME  = 2.0;                                // seconds tracking player X
+    const SMASH_SPEED = (FLOOR_Y - HOVER_Y) / 1.0;         // px/s — reaches floor in 1s
+
     const boss = {
       name: 'DARK OVERLORD',
       x: W2D / 2, y: FLOOR_Y,
@@ -333,71 +337,83 @@ const Bosses = (() => {
       phase: 1,
       t: 0,
       projectiles: [],
-      beamTimer: 0,
-      beamActive: false,
-      beamX: 0, beamDur: 0,
-      dashTimer: 3,
+      shootCooldown: 1.8,   // wait before first volley
+      shotsLeft: 0,
+      shotGapTimer: 0,
     };
+
     boss.takeDamage = (amt) => {
       boss.hp -= amt;
       Audio.playBossHit();
       if (boss.hp <= 0) boss.dead = true;
     };
+
     boss.update = (dt, player2d) => {
       boss.t += dt;
       const pct = boss.hp / boss.maxHp;
       if (pct < 0.66) boss.phase = 2;
       if (pct < 0.33) boss.phase = 3;
 
-      // Drift toward player menacingly
-      const dx = player2d.x2d - boss.x;
-      boss.x += (dx > 0 ? 1 : -1) * 15 * boss.phase * dt;
+      // Drift toward player
+      const bDx = player2d.x2d - boss.x;
+      boss.x += (bDx > 0 ? 1 : -1) * 15 * boss.phase * dt;
       boss.x = Math.max(40, Math.min(W2D - 40, boss.x));
 
-      // Spread shot
-      boss.beamTimer -= dt;
-      const interval = boss.phase === 1 ? 2.2 : boss.phase === 2 ? 1.4 : 0.85;
-      if (boss.beamTimer <= 0) {
-        boss.beamTimer = interval;
-        const count = 4 + boss.phase * 2;
-        for (let i = 0; i < count; i++) {
-          const a = Math.PI + (i / (count - 1) - 0.5) * Math.PI * 1.2;
+      // Firing state machine: fire one ball at a time, 0.1s apart
+      if (boss.shotsLeft > 0) {
+        boss.shotGapTimer -= dt;
+        if (boss.shotGapTimer <= 0) {
           boss.projectiles.push({
             x: boss.x, y: boss.y - boss.h * 0.5,
-            vx: Math.cos(a) * 100, vy: Math.sin(a) * 100, dead: false,
+            vy: -180,
+            hoverTimer: HOVER_TIME,
+            state: 'rising',   // 'rising' | 'hovering' | 'smashing'
+            dead: false,
           });
+          boss.shotsLeft--;
+          if (boss.shotsLeft > 0) {
+            boss.shotGapTimer = 0.1;
+          } else {
+            const cooldown = boss.phase === 1 ? 4.0 : boss.phase === 2 ? 3.0 : 2.0;
+            boss.shootCooldown = cooldown;
+          }
+        }
+      } else {
+        boss.shootCooldown -= dt;
+        if (boss.shootCooldown <= 0) {
+          boss.shotsLeft   = 2 + boss.phase;  // 3 / 4 / 5
+          boss.shotGapTimer = 0;
         }
       }
 
-      // Laser beam (phase 2+)
-      if (boss.phase >= 2) {
-        boss.dashTimer -= dt;
-        if (boss.dashTimer <= 0) {
-          boss.dashTimer = 4;
-          boss.beamActive = true;
-          boss.beamX = player2d.x2d;
-          boss.beamDur = 0.8;
-        }
-        if (boss.beamActive) {
-          boss.beamDur -= dt;
-          if (boss.beamDur <= 0) boss.beamActive = false;
-          if (Math.abs(player2d.x2d - boss.beamX) < 10 && player2d.onGround)
-            Player.takeDamage(player2d, 14 * dt);
-        }
-      }
-
+      // Update each ball through its lifecycle
       for (const p of boss.projectiles) {
-        p.x += p.vx * dt; p.y += p.vy * dt;
-        p.vy += 100 * dt;
-        if (p.x < 0 || p.x > W2D || p.y > FLOOR_Y + 10) { p.dead = true; continue; }
-        const dx2 = p.x - player2d.x2d, dy2 = p.y - player2d.y2d;
-        if (Math.abs(dx2) < 8 && Math.abs(dy2) < 10 && !p.dead) {
-          Player.takeDamage(player2d, 12);
+        if (p.dead) continue;
+
+        if (p.state === 'rising') {
+          p.y += p.vy * dt;
+          if (p.y <= HOVER_Y) {
+            p.y = HOVER_Y;
+            p.state = 'hovering';
+          }
+        } else if (p.state === 'hovering') {
+          p.x = player2d.x2d;       // track player X
+          p.hoverTimer -= dt;
+          if (p.hoverTimer <= 0) p.state = 'smashing';   // lock X, fall
+        } else if (p.state === 'smashing') {
+          p.y += SMASH_SPEED * dt;
+          if (p.y >= FLOOR_Y) { p.dead = true; continue; }
+        }
+
+        const pdx = p.x - player2d.x2d, pdy = p.y - player2d.y2d;
+        if (Math.abs(pdx) < 10 && Math.abs(pdy) < 14 && !p.dead) {
+          Player.takeDamage(player2d, 15);
           p.dead = true;
         }
       }
       boss.projectiles = boss.projectiles.filter(p => !p.dead);
     };
+
     boss.draw = (ctx) => {
       const bx = boss.x - boss.w / 2, by = boss.y - boss.h;
       // Aura
@@ -407,10 +423,9 @@ const Bosses = (() => {
       grad.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = grad;
       ctx.beginPath(); ctx.arc(boss.x, boss.y - boss.h/2, 50, 0, Math.PI*2); ctx.fill();
-      // Armor
+      // Armor body
       ctx.fillStyle = '#1a1a2a';
       ctx.fillRect(bx, by + 20, boss.w, boss.h - 20);
-      // Chest plate
       ctx.fillStyle = '#440044';
       ctx.fillRect(bx + 6, by + 24, boss.w - 12, 30);
       // Head
@@ -419,23 +434,26 @@ const Bosses = (() => {
       // Visor
       ctx.fillStyle = boss.phase === 3 ? '#ff0000' : '#aa00ff';
       ctx.fillRect(bx + 12, by + 8, boss.w - 24, 6);
-      // Shoulder plates
+      // Shoulders
       ctx.fillStyle = '#330033';
       ctx.fillRect(bx - 10, by + 20, 14, 20);
       ctx.fillRect(bx + boss.w - 4, by + 20, 14, 20);
-      // Laser beam
-      if (boss.beamActive) {
-        ctx.strokeStyle = `rgba(255,0,0,${0.8 * (boss.beamDur / 0.8)})`;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(boss.beamX, 0); ctx.lineTo(boss.beamX, FLOOR_Y);
-        ctx.stroke();
-        ctx.lineWidth = 1;
-      }
-      // Projectiles
-      ctx.fillStyle = '#9900ff';
+
+      // Balls + warning lines
       for (const p of boss.projectiles) {
-        ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
+        if (p.state === 'hovering') {
+          ctx.save();
+          ctx.strokeStyle = `rgba(255,0,80,${0.25 + 0.35 * (1 - p.hoverTimer / HOVER_TIME)})`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 4]);
+          ctx.beginPath(); ctx.moveTo(p.x, p.y + 8); ctx.lineTo(p.x, FLOOR_Y); ctx.stroke();
+          ctx.restore();
+        }
+        const smashing = p.state === 'smashing';
+        ctx.fillStyle = smashing ? '#ff4400' : '#9900ff';
+        ctx.beginPath(); ctx.arc(p.x, p.y, smashing ? 8 : 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.beginPath(); ctx.arc(p.x - 2, p.y - 2, 2, 0, Math.PI * 2); ctx.fill();
       }
     };
     return boss;
