@@ -118,34 +118,29 @@ const Screens = (() => {
     if (devInfo) {
       // Dev panel background
       ctx.fillStyle = 'rgba(0,20,0,0.92)';
-      ctx.fillRect(10, 134, W - 20, 62);
+      ctx.fillRect(10, 132, W - 20, 66);
       ctx.strokeStyle = '#224422';
       ctx.lineWidth = 1;
-      ctx.strokeRect(10, 134, W - 20, 62);
+      ctx.strokeRect(10, 132, W - 20, 66);
 
       // Stats
-      ctx.font = '5px Arial, sans-serif';
+      ctx.font = '8px Arial, sans-serif';
       ctx.fillStyle = '#44ff44';
-      ctx.fillText(`HP: ${devInfo.hp}/${devInfo.maxHp}  |  World: ${devInfo.world + 1}  Level: ${devInfo.level + 1}  |  Enemies: ${devInfo.enemies}`, 16, 146);
-      ctx.fillText(`Pos: (${devInfo.px}, ${devInfo.py})  |  Vignette: ${devInfo.vig}  |  Boss HP: ${devInfo.bossHp}`, 16, 158);
+      ctx.fillText(`HP ${devInfo.hp}/${devInfo.maxHp}   W${devInfo.world + 1}-L${devInfo.level + 1}   Enemies: ${devInfo.enemies}`, 16, 144);
+      ctx.fillText(`Pos (${devInfo.px}, ${devInfo.py})   Vig: ${devInfo.vig}   Boss: ${devInfo.bossHp}`, 16, 156);
 
       // Divider
       ctx.strokeStyle = '#224422';
-      ctx.beginPath(); ctx.moveTo(14, 164); ctx.lineTo(W - 14, 164); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(14, 162); ctx.lineTo(W - 14, 162); ctx.stroke();
 
       // Death selector
+      ctx.font = '8px Arial, sans-serif';
       ctx.fillStyle = '#886600';
-      ctx.fillText('TRIGGER DEATH:', 16, 174);
+      ctx.fillText('Trigger death:', 16, 173);
 
       const name = DEATH_NAMES[devInfo.deathIndex];
-      const label = `< ${name} >`;
-      ctx.fillStyle = '#ffcc00';
-      ctx.font = '6px Arial, sans-serif';
-      centeredText(ctx, label, 186, 6, '#ffcc00');
-
-      ctx.font = '5px Arial, sans-serif';
-      ctx.fillStyle = '#886600';
-      centeredText(ctx, '← → to pick   T to trigger', 194, 5, '#664400');
+      centeredText(ctx, `< ${name} >`, 184, 9, '#ffcc00');
+      centeredText(ctx, '← → pick   T trigger', 195, 7, '#664400');
     }
   }
 
