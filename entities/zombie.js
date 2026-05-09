@@ -35,7 +35,7 @@ const Zombie = (() => {
     }
 
     // Melee attack
-    if (dist < 0.65 && z.attackCooldown === 0) {
+    if (dist < 0.75 && z.attackCooldown === 0) {
       Player.takeDamage(player, z.meleeDamage, 'zombie');
       z.attackCooldown = 1.2;
     }
