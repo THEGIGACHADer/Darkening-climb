@@ -142,9 +142,9 @@ const DeathAnim = (() => {
 
     const eyeW = 30, eyeH = 20;
     let openAmount;
-    if      (sec < 1.50) openAmount = (sec - 1.0) / 0.50;        // opens over 0.5s
-    else if (sec < 2.10) openAmount = 1.0;                        // holds open 0.6s
-    else if (sec < 2.65) openAmount = 1 - (sec - 2.10) / 0.55;   // closes over 0.55s
+    if      (sec < 1.20) openAmount = (sec - 1.0) / 0.20;        // opens over 0.2s
+    else if (sec < 2.20) openAmount = 1.0;                        // stares for 1.0s
+    else if (sec < 2.50) openAmount = 1 - (sec - 2.20) / 0.30;   // closes over 0.3s
     else                 openAmount = 0;
     openAmount = Math.max(0, openAmount);
     if (openAmount <= 0) return;
@@ -164,7 +164,7 @@ const DeathAnim = (() => {
     ctx.rect(cx - eyeW - 2, cy - openH, (eyeW + 2) * 2, openH * 2);
     ctx.clip();
 
-    // Entirely red eye — no white at all
+    // Entirely red eye — no pupil
     ctx.fillStyle = '#bb0000';
     ctx.beginPath();
     ctx.ellipse(cx, cy, eyeW, eyeH, 0, 0, Math.PI * 2);
@@ -172,12 +172,6 @@ const DeathAnim = (() => {
     ctx.fillStyle = '#ff1100';
     ctx.beginPath();
     ctx.ellipse(cx, cy, eyeW * 0.58, eyeH * 0.58, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Slit pupil
-    ctx.fillStyle = '#1a0000';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 4, eyeH * 0.78, 0, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
