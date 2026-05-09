@@ -562,7 +562,7 @@ const Bosses = (() => {
 
       for (const sp of boss.spikes) {
         sp.t += dt;
-        if (sp.state === 'warn' && sp.t >= 0.55) { sp.state = 'up'; sp.t = 0; }
+        if (sp.state === 'warn' && sp.t >= 1.2) { sp.state = 'up'; sp.t = 0; }
         else if (sp.state === 'up') {
           if (!sp.hit) {
             const prog = Math.min(1, sp.t / 0.28);
@@ -613,10 +613,10 @@ const Bosses = (() => {
       // Floor spikes
       for (const sp of boss.spikes) {
         if (sp.state === 'warn') {
-          const alpha = 0.35 + 0.65 * (sp.t / 0.55);
+          const alpha = 0.35 + 0.65 * (sp.t / 1.2);
           ctx.save();
           ctx.fillStyle = `rgba(255,30,0,${alpha})`;
-          ctx.font = `bold ${7 + (sp.t / 0.55 * 3) | 0}px Arial, sans-serif`;
+          ctx.font = `bold ${7 + (sp.t / 1.2 * 3) | 0}px Arial, sans-serif`;
           ctx.textAlign = 'center';
           ctx.fillText('!!!!', sp.x, FLOOR_Y - 4);
           ctx.fillStyle = `rgba(255,80,0,${alpha * 0.35})`;
