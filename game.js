@@ -45,6 +45,7 @@ let vigFade;
 let deathCause, deathTimer, lastGameOffscreen;
 
 function startGame() {
+  newRun();
   levelIndex    = 0;
   worldIndex    = 0;
   levelInWorld  = 0;
