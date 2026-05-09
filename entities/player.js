@@ -63,13 +63,13 @@ const Player = (() => {
     if (canMove(level, nx, p.y)) {
       p.x = nx;
     } else {
-      if (boosted && p.hp > 0) { p.hp = 0; p.lastHitBy = 'kinetic'; }
+      if (boosted && p.hp > 0 && mx !== 0) { p.hp = 0; p.lastHitBy = 'kinetic'; }
       p.vx = 0;
     }
     if (canMove(level, p.x, ny)) {
       p.y = ny;
     } else {
-      if (boosted && p.hp > 0) { p.hp = 0; p.lastHitBy = 'kinetic'; }
+      if (boosted && p.hp > 0 && my !== 0) { p.hp = 0; p.lastHitBy = 'kinetic'; }
       p.vy = 0;
     }
 
