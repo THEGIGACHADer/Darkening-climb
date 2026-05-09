@@ -567,7 +567,7 @@ const Bosses = (() => {
           if (!sp.hit) {
             const prog = Math.min(1, sp.t / 0.28);
             const e = 1 - (1 - prog) * (1 - prog);
-            const spikeTop = FLOOR_Y - e * 38;
+            const spikeTop = FLOOR_Y - e * 22;
             if (Math.abs(sp.x - player2d.x2d) < 9 && player2d.y2d >= spikeTop - 5) {
               Player.takeDamage(player2d, 18);
               sp.hit = true;
@@ -631,7 +631,7 @@ const Bosses = (() => {
             const f = Math.min(1, sp.t / 0.22);
             prog = (1 - f) * (1 - f);              // ease-in retract
           }
-          const spikeH = prog * 38;
+          const spikeH = prog * 22;
           const spikeTop = FLOOR_Y - spikeH;
           // Shaft
           ctx.fillStyle = '#550022';
