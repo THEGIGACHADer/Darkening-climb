@@ -15,13 +15,13 @@ const HUD = (() => {
     ctx.strokeRect(4, H - 14, 80, 8);
 
     ctx.fillStyle = '#fff';
-    ctx.font = '6px monospace';
+    ctx.font = '6px Arial, sans-serif';
     ctx.fillText(`HP ${player.hp}`, 6, H - 7);
 
     // World / level label
     const label = WORLD_NAMES[worldIndex] + '  ' + (levelInWorld + 1) + '/5';
     ctx.fillStyle = '#aaa';
-    ctx.font = '5px monospace';
+    ctx.font = '5px Arial, sans-serif';
     ctx.fillText(label, W / 2 - label.length * 1.5, H - 6);
 
     // Mode indicator (debug, can remove)

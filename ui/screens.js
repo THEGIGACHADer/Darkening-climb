@@ -3,7 +3,7 @@ const Screens = (() => {
   const WORLD_NAMES = ['SLIME CAVES', 'ZOMBIE GRAVEYARD', 'HAUNTED DUNGEON', 'FINAL FORTRESS'];
 
   function centeredText(ctx, text, y, size, color) {
-    ctx.font = `${size}px monospace`;
+    ctx.font = `${size}px Arial, sans-serif`;
     ctx.fillStyle = color;
     ctx.fillText(text, (W - ctx.measureText(text).width) / 2, y);
   }
@@ -62,7 +62,7 @@ const Screens = (() => {
     centeredText(ctx, 'PRESS SPACE TO START', 168, 7, '#ffcc00');
     // Decorative skulls
     ctx.fillStyle = '#441111';
-    ctx.font = '12px monospace';
+    ctx.font = '12px Arial, sans-serif';
     ctx.fillText('☠', 20, H - 20);
     ctx.fillText('☠', W - 32, H - 20);
   }
@@ -124,7 +124,7 @@ const Screens = (() => {
       ctx.strokeRect(10, 134, W - 20, 62);
 
       // Stats
-      ctx.font = '5px monospace';
+      ctx.font = '5px Arial, sans-serif';
       ctx.fillStyle = '#44ff44';
       ctx.fillText(`HP: ${devInfo.hp}/${devInfo.maxHp}  |  World: ${devInfo.world + 1}  Level: ${devInfo.level + 1}  |  Enemies: ${devInfo.enemies}`, 16, 146);
       ctx.fillText(`Pos: (${devInfo.px}, ${devInfo.py})  |  Vignette: ${devInfo.vig}  |  Boss HP: ${devInfo.bossHp}`, 16, 158);
@@ -140,16 +140,14 @@ const Screens = (() => {
       const name = DEATH_NAMES[devInfo.deathIndex];
       const label = `< ${name} >`;
       ctx.fillStyle = '#ffcc00';
-      ctx.font = '6px monospace';
+      ctx.font = '6px Arial, sans-serif';
       centeredText(ctx, label, 186, 6, '#ffcc00');
 
-      ctx.font = '5px monospace';
+      ctx.font = '5px Arial, sans-serif';
       ctx.fillStyle = '#886600';
       centeredText(ctx, '← → to pick   T to trigger', 194, 5, '#664400');
     }
   }
 
   return { drawMenu, drawGameOver, drawWorldClear, drawWin, drawBossIntro, drawPaused, DEATH_NAMES };
-
-  return { drawMenu, drawGameOver, drawWorldClear, drawWin, drawBossIntro, drawPaused };
 })();

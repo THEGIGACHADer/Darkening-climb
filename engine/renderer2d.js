@@ -237,7 +237,7 @@ const Renderer2D = (() => {
       ctx.lineWidth = 1;
       ctx.strokeRect(20, 8, W - 40, 10);
       ctx.fillStyle = '#fff';
-      ctx.font = '6px monospace';
+      ctx.font = '6px Arial, sans-serif';
       ctx.fillText(boss.name, 22, 16);
     }
 
