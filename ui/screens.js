@@ -116,31 +116,39 @@ const Screens = (() => {
     centeredText(ctx, 'D  —  See all things important  (DEVS ONLY)', 126, 5, '#445544');
 
     if (devInfo) {
-      // Dev panel background
+      const BOSS_NAMES = ['SLIME QUEEN', 'ZOMBIE KING', 'NECROMANCER', 'DARK OVERLORD'];
+
+      // Dev panel background (taller to fit boss row)
       ctx.fillStyle = 'rgba(0,20,0,0.92)';
-      ctx.fillRect(10, 132, W - 20, 66);
+      ctx.fillRect(10, 118, W - 20, 80);
       ctx.strokeStyle = '#224422';
       ctx.lineWidth = 1;
-      ctx.strokeRect(10, 132, W - 20, 66);
+      ctx.strokeRect(10, 118, W - 20, 80);
 
       // Stats
       ctx.font = '8px Arial, sans-serif';
       ctx.fillStyle = '#44ff44';
-      ctx.fillText(`HP ${devInfo.hp}/${devInfo.maxHp}   W${devInfo.world + 1}-L${devInfo.level + 1}   Enemies: ${devInfo.enemies}`, 16, 144);
-      ctx.fillText(`Pos (${devInfo.px}, ${devInfo.py})   Vig: ${devInfo.vig}   Boss: ${devInfo.bossHp}`, 16, 156);
+      ctx.fillText(`HP ${devInfo.hp}/${devInfo.maxHp}   W${devInfo.world + 1}-L${devInfo.level + 1}   Enemies: ${devInfo.enemies}`, 16, 130);
+      ctx.fillText(`Pos (${devInfo.px}, ${devInfo.py})   Vig: ${devInfo.vig}   Boss: ${devInfo.bossHp}`, 16, 141);
 
       // Divider
       ctx.strokeStyle = '#224422';
-      ctx.beginPath(); ctx.moveTo(14, 162); ctx.lineTo(W - 14, 162); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(14, 147); ctx.lineTo(W - 14, 147); ctx.stroke();
 
       // Death selector
       ctx.font = '8px Arial, sans-serif';
       ctx.fillStyle = '#886600';
-      ctx.fillText('Trigger death:', 16, 173);
+      ctx.fillText('Trigger death:', 16, 157);
+      centeredText(ctx, `< ${DEATH_NAMES[devInfo.deathIndex]} >`, 167, 9, '#ffcc00');
+      centeredText(ctx, '← → pick   T trigger', 175, 7, '#664400');
 
-      const name = DEATH_NAMES[devInfo.deathIndex];
-      centeredText(ctx, `< ${name} >`, 184, 9, '#ffcc00');
-      centeredText(ctx, '← → pick   T trigger', 195, 7, '#664400');
+      // Divider
+      ctx.strokeStyle = '#224422';
+      ctx.beginPath(); ctx.moveTo(14, 180); ctx.lineTo(W - 14, 180); ctx.stroke();
+
+      // Boss warp selector
+      centeredText(ctx, `< ${BOSS_NAMES[devInfo.bossIndex]} >`, 190, 9, '#00eeff');
+      centeredText(ctx, '↑ ↓ pick   B warp to boss', 197, 7, '#005566');
     }
   }
 

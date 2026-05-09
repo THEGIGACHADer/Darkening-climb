@@ -37,6 +37,7 @@ resize();
 let state, prevState;
 let devPanelOpen = false;
 let devDeathIndex = 0;
+let devBossIndex  = 0;
 let player, level, bullets, boss;
 let levelIndex, worldIndex, levelInWorld;
 let bossIntroTimer;
@@ -155,6 +156,16 @@ function update(dt) {
       deathCause = Screens.DEATH_NAMES[devDeathIndex];
       devPanelOpen = false;
       setState(STATE.DEATH_ANIM);
+      return;
+    }
+    if (Input.wasPressed('ArrowUp'))   { devBossIndex = (devBossIndex - 1 + 4) % 4; return; }
+    if (Input.wasPressed('ArrowDown')) { devBossIndex = (devBossIndex + 1) % 4;      return; }
+    if (Input.wasPressed('KeyB')) {
+      worldIndex   = devBossIndex;
+      levelInWorld = 4;
+      levelIndex   = devBossIndex * 5 + 4;
+      devPanelOpen = false;
+      setState(STATE.BOSS_INTRO);
       return;
     }
   }
@@ -376,6 +387,7 @@ function render() {
         vig:        vigFade ? vigFade.toFixed(2) : '—',
         bossHp:     boss ? `${boss.hp | 0}/${boss.maxHp}` : '—',
         deathIndex: devDeathIndex,
+        bossIndex:  devBossIndex,
       } : null;
       Screens.drawPaused(tmp.getContext('2d'), devInfo);
       ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
