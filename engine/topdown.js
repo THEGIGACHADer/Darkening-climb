@@ -19,6 +19,26 @@ const TopDown = (() => {
       ctx.lineWidth = 0.5;
       ctx.strokeRect(x + 0.5, y + 0.5, TS - 1, TS - 1);
 
+      // Sparse vine details on floor tiles
+      const hash = ((x / TS | 0) * 3 + (y / TS | 0) * 7) % 13;
+      if (hash < 2) {
+        ctx.strokeStyle = 'rgba(22, 58, 12, 0.72)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        if (hash === 0) {
+          ctx.moveTo(x + 2, y + 9);
+          ctx.quadraticCurveTo(x + 7, y + 4, x + 14, y + 11);
+        } else {
+          ctx.moveTo(x + 3, y + 2);
+          ctx.quadraticCurveTo(x + 11, y + 7, x + 12, y + 14);
+        }
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(30, 74, 16, 0.65)';
+        ctx.beginPath();
+        ctx.arc(x + 8, y + 8, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
     } else if (cell === 1) {
       // Wall — 3D raised block: drop shadow + face + highlights
       ctx.fillStyle = '#08080f';

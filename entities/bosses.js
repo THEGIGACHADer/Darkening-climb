@@ -325,7 +325,7 @@ const Bosses = (() => {
       name: 'DARK OVERLORD',
       x: W2D / 2, y: FLOOR_Y,
       w: 56, h: 80,
-      hp: 500, maxHp: 500,
+      hp: 375, maxHp: 375,
       dead: false,
       phase: 1,
       t: 0,
@@ -347,15 +347,15 @@ const Bosses = (() => {
 
       // Drift toward player menacingly
       const dx = player2d.x2d - boss.x;
-      boss.x += (dx > 0 ? 1 : -1) * 20 * boss.phase * dt;
+      boss.x += (dx > 0 ? 1 : -1) * 15 * boss.phase * dt;
       boss.x = Math.max(40, Math.min(W2D - 40, boss.x));
 
       // Spread shot
       boss.beamTimer -= dt;
-      const interval = boss.phase === 1 ? 1.8 : boss.phase === 2 ? 1.0 : 0.5;
+      const interval = boss.phase === 1 ? 2.2 : boss.phase === 2 ? 1.4 : 0.85;
       if (boss.beamTimer <= 0) {
         boss.beamTimer = interval;
-        const count = 5 + boss.phase * 2;
+        const count = 4 + boss.phase * 2;
         for (let i = 0; i < count; i++) {
           const a = Math.PI + (i / (count - 1) - 0.5) * Math.PI * 1.2;
           boss.projectiles.push({
@@ -378,7 +378,7 @@ const Bosses = (() => {
           boss.beamDur -= dt;
           if (boss.beamDur <= 0) boss.beamActive = false;
           if (Math.abs(player2d.x2d - boss.beamX) < 10 && player2d.onGround)
-            Player.takeDamage(player2d, 20 * dt);
+            Player.takeDamage(player2d, 14 * dt);
         }
       }
 
