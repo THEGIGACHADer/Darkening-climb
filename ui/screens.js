@@ -118,18 +118,25 @@ const Screens = (() => {
     if (devInfo) {
       const BOSS_NAMES = ['SLIME QUEEN', 'ZOMBIE KING', 'NECROMANCER', 'DARK OVERLORD'];
 
-      // Dev panel background (taller to fit boss row)
+      // Dev panel background
       ctx.fillStyle = 'rgba(0,20,0,0.92)';
-      ctx.fillRect(10, 118, W - 20, 80);
+      ctx.fillRect(10, 108, W - 20, 90);
       ctx.strokeStyle = '#224422';
       ctx.lineWidth = 1;
-      ctx.strokeRect(10, 118, W - 20, 80);
+      ctx.strokeRect(10, 108, W - 20, 90);
 
       // Stats
       ctx.font = '8px Arial, sans-serif';
       ctx.fillStyle = '#44ff44';
-      ctx.fillText(`HP ${devInfo.hp}/${devInfo.maxHp}   W${devInfo.world + 1}-L${devInfo.level + 1}   Enemies: ${devInfo.enemies}`, 16, 130);
-      ctx.fillText(`Pos (${devInfo.px}, ${devInfo.py})   Vig: ${devInfo.vig}   Boss: ${devInfo.bossHp}`, 16, 141);
+      ctx.fillText(`HP ${devInfo.hp}/${devInfo.maxHp}   W${devInfo.world + 1}-L${devInfo.level + 1}   Enemies: ${devInfo.enemies}`, 16, 120);
+      ctx.fillText(`Pos (${devInfo.px}, ${devInfo.py})   Vig: ${devInfo.vig}   Boss: ${devInfo.bossHp}`, 16, 130);
+
+      // Cheat toggles
+      ctx.font = '7px Arial, sans-serif';
+      const on = '#44ff44', off = '#335533';
+      ctx.fillStyle = devInfo.invincible  ? on : off; ctx.fillText('[I] Invincible', 16,  141);
+      ctx.fillStyle = devInfo.noclip      ? on : off; ctx.fillText('[N] Noclip',    112, 141);
+      ctx.fillStyle = devInfo.noDarkness  ? on : off; ctx.fillText('[F] No Darkness', 190, 141);
 
       // Divider
       ctx.strokeStyle = '#224422';
@@ -139,8 +146,8 @@ const Screens = (() => {
       ctx.font = '8px Arial, sans-serif';
       ctx.fillStyle = '#886600';
       ctx.fillText('Trigger death:', 16, 157);
-      centeredText(ctx, `< ${DEATH_NAMES[devInfo.deathIndex]} >`, 167, 9, '#ffcc00');
-      centeredText(ctx, '← → pick   T trigger', 175, 7, '#664400');
+      centeredText(ctx, `< ${DEATH_NAMES[devInfo.deathIndex]} >`, 166, 9, '#ffcc00');
+      centeredText(ctx, '← → pick   T trigger', 174, 7, '#664400');
 
       // Divider
       ctx.strokeStyle = '#224422';

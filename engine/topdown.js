@@ -86,24 +86,30 @@ const TopDown = (() => {
       }
     }
 
-    // Speed boost pickups
+    // Speed boost pickups (lightning bolt)
     const now = Date.now();
-    const pulse = 0.65 + 0.35 * Math.sin(now / 180);
+    const pulse = 0.7 + 0.3 * Math.sin(now / 200);
     for (const b of (level.boosts || [])) {
       const bx = b.x * TS, by = b.y * TS;
-      ctx.fillStyle = `rgba(255,220,30,${pulse})`;
+      ctx.save();
+      ctx.translate(bx, by);
+      // Glow
+      ctx.fillStyle = `rgba(160,210,255,${pulse * 0.25})`;
+      ctx.beginPath(); ctx.arc(0, 0, TS * 0.46, 0, Math.PI * 2); ctx.fill();
+      // Bolt shape
+      ctx.fillStyle = `rgba(255,255,100,${pulse})`;
+      ctx.strokeStyle = `rgba(160,220,255,${pulse * 0.9})`;
+      ctx.lineWidth = 0.5;
       ctx.beginPath();
-      ctx.arc(bx, by, TS * 0.28, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = `rgba(255,255,120,${pulse * 0.7})`;
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 6; i++) {
-        const a = (i / 6) * Math.PI * 2 + now / 700;
-        ctx.beginPath();
-        ctx.moveTo(bx + Math.cos(a) * TS * 0.33, by + Math.sin(a) * TS * 0.33);
-        ctx.lineTo(bx + Math.cos(a) * TS * 0.46, by + Math.sin(a) * TS * 0.46);
-        ctx.stroke();
-      }
+      ctx.moveTo(2, -7);
+      ctx.lineTo(-2, -1);
+      ctx.lineTo(0, -1);
+      ctx.lineTo(-2, 7);
+      ctx.lineTo(2, 1);
+      ctx.lineTo(0, 1);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.restore();
     }
 
     // Bullets

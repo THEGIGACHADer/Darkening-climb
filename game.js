@@ -38,6 +38,9 @@ let state, prevState;
 let devPanelOpen = false;
 let devDeathIndex = 0;
 let devBossIndex  = 0;
+let devInvincible = false;
+let devNoclip     = false;
+let devNoDarkness = false;
 let player, level, bullets, boss;
 let levelIndex, worldIndex, levelInWorld;
 let bossIntroTimer;
@@ -168,6 +171,9 @@ function update(dt) {
       setState(STATE.BOSS_INTRO);
       return;
     }
+    if (Input.wasPressed('KeyI')) { devInvincible = !devInvincible; return; }
+    if (Input.wasPressed('KeyN')) { devNoclip     = !devNoclip;     return; }
+    if (Input.wasPressed('KeyF')) { devNoDarkness = !devNoDarkness; return; }
   }
 
   switch (state) {
@@ -177,7 +183,15 @@ function update(dt) {
       break;
 
     case STATE.PLAYING: {
-      Player.update3D(player, level, dt, bullets);
+      if (devNoclip) {
+        const origIsWall = level.isWall;
+        level.isWall = () => false;
+        Player.update3D(player, level, dt, bullets);
+        level.isWall = origIsWall;
+      } else {
+        Player.update3D(player, level, dt, bullets);
+      }
+      if (devInvincible) player.hp = Player.MAX_HP;
 
       // Update enemies (slimes split on death)
       const newEnemies = [];
@@ -212,15 +226,18 @@ function update(dt) {
         }
       }
 
-      vigFade = Math.max(0, vigFade - Math.sqrt(vigFade) * 0.17 * dt);
+      if (devNoDarkness) vigFade = 12;
+      else vigFade = Math.max(0, vigFade - Math.sqrt(vigFade) * 0.17 * dt);
 
       // Game over
-      if (player.hp <= 0) {
-        deathCause = player.lastHitBy || 'darkness';
-        setState(STATE.DEATH_ANIM);
-      } else if (vigFade <= 0.5) {
-        deathCause = 'darkness';
-        setState(STATE.DEATH_ANIM);
+      if (!devInvincible) {
+        if (player.hp <= 0) {
+          deathCause = player.lastHitBy || 'darkness';
+          setState(STATE.DEATH_ANIM);
+        } else if (vigFade <= 0.5) {
+          deathCause = 'darkness';
+          setState(STATE.DEATH_ANIM);
+        }
       }
       break;
     }
@@ -389,8 +406,11 @@ function render() {
         py:         player ? player.y.toFixed(1) : 0,
         vig:        vigFade ? vigFade.toFixed(2) : '—',
         bossHp:     boss ? `${boss.hp | 0}/${boss.maxHp}` : '—',
-        deathIndex: devDeathIndex,
-        bossIndex:  devBossIndex,
+        deathIndex:  devDeathIndex,
+        bossIndex:   devBossIndex,
+        invincible:  devInvincible,
+        noclip:      devNoclip,
+        noDarkness:  devNoDarkness,
       } : null;
       Screens.drawPaused(tmp.getContext('2d'), devInfo);
       ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
