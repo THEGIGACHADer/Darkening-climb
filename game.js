@@ -362,7 +362,7 @@ function render() {
     }
 
     case STATE.BOSS_FIGHT: {
-      offscreen = Renderer2D.render(boss, player, bullets, player.flashTimer);
+      offscreen = Renderer2D.render(boss, player, bullets, player.flashTimer, worldIndex);
       lastGameOffscreen = offscreen;
       ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
       // HUD
@@ -376,7 +376,7 @@ function render() {
     }
 
     case STATE.WORLD_CLEAR: {
-      offscreen = Renderer2D.render(boss, player, [], 0);
+      offscreen = Renderer2D.render(boss, player, [], 0, worldIndex);
       ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
       const tmp = document.createElement('canvas');
       tmp.width = INTERNAL_W; tmp.height = INTERNAL_H;

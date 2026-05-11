@@ -1,31 +1,94 @@
 const HUD = (() => {
   const W = 320, H = 200;
-  const WORLD_NAMES = ['SLIME CAVES', 'ZOMBIE GRAVEYARD', 'HAUNTED DUNGEON', 'FINAL FORTRESS'];
+  const WORLD_NAMES   = ['SLIME CAVES', 'ZOMBIE GRAVEYARD', 'HAUNTED DUNGEON', 'FINAL FORTRESS'];
+  const WORLD_ACCENTS = ['#22cc44',     '#aaaaff',          '#cc66ff',          '#ff5500'];
+  const HP_SEGS = 10;
+  const BAR_W = 88, BAR_H = 9;
+  const BAR_X = 4, BAR_Y = H - 14;
 
   function draw(ctx, player, worldIndex, levelInWorld, mode) {
-    // Health bar
-    const hpPct = Math.max(0, player.hp / Player.MAX_HP);
-    ctx.fillStyle = '#111';
-    ctx.fillRect(4, H - 14, 80, 8);
-    const barColor = hpPct > 0.5 ? '#22cc44' : hpPct > 0.25 ? '#ffcc00' : '#cc2200';
-    ctx.fillStyle = barColor;
-    ctx.fillRect(4, H - 14, (80 * hpPct) | 0, 8);
-    ctx.strokeStyle = '#555';
+    const accent = WORLD_ACCENTS[worldIndex] || '#22cc44';
+    const hpPct  = Math.max(0, player.hp / Player.MAX_HP);
+
+    // ── HP bar ──────────────────────────────────────────────────────────────
+    // Dark backing
+    ctx.fillStyle = '#080808';
+    ctx.fillRect(BAR_X - 1, BAR_Y - 1, BAR_W + 2, BAR_H + 2);
+
+    // Segment fill
+    const segW = (BAR_W - HP_SEGS + 1) / HP_SEGS;
+    const filledSegs = Math.ceil(hpPct * HP_SEGS);
+    const segColor = hpPct > 0.5 ? accent : hpPct > 0.25 ? '#ffcc00' : '#cc2200';
+
+    for (let i = 0; i < HP_SEGS; i++) {
+      const sx = BAR_X + i * (segW + 1);
+      if (i < filledSegs) {
+        // filled segment — gradient shimmer
+        const bright = i === filledSegs - 1 && hpPct * HP_SEGS % 1 !== 0
+          ? hpPct * HP_SEGS % 1   // partial last segment
+          : 1;
+        ctx.globalAlpha = bright * 0.9 + 0.1;
+        ctx.fillStyle = segColor;
+        ctx.fillRect(sx | 0, BAR_Y, segW | 0, BAR_H);
+        // top highlight
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.fillRect(sx | 0, BAR_Y, segW | 0, 2);
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(sx | 0, BAR_Y, segW | 0, BAR_H);
+      }
+    }
+
+    // Border with world-accent glow
+    ctx.strokeStyle = accent;
     ctx.lineWidth = 1;
-    ctx.strokeRect(4, H - 14, 80, 8);
+    ctx.strokeRect(BAR_X - 0.5, BAR_Y - 0.5, BAR_W + 1, BAR_H + 1);
 
-    ctx.fillStyle = '#fff';
-    ctx.font = '6px Arial, sans-serif';
-    ctx.fillText(`HP ${player.hp}`, 6, H - 7);
+    // HP label
+    ctx.fillStyle = hpPct > 0.25 ? '#ffffff' : '#ff4444';
+    ctx.font = 'bold 5px Arial, sans-serif';
+    ctx.fillText(`HP ${player.hp | 0}`, BAR_X + 1, BAR_Y - 2);
 
-    // World / level label
-    const label = WORLD_NAMES[worldIndex] + '  ' + (levelInWorld + 1) + '/5';
-    ctx.fillStyle = '#aaa';
+    // ── Level pips ──────────────────────────────────────────────────────────
+    const pipX = BAR_X;
+    const pipY = H - 4;
+    for (let i = 0; i < 5; i++) {
+      const px = pipX + i * 7;
+      if (i < levelInWorld) {
+        ctx.fillStyle = accent;
+        ctx.fillRect(px, pipY - 3, 5, 3);
+      } else if (i === levelInWorld) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(px, pipY - 3, 5, 3);
+      } else {
+        ctx.fillStyle = '#333333';
+        ctx.fillRect(px, pipY - 3, 5, 3);
+      }
+    }
+
+    // ── World label ─────────────────────────────────────────────────────────
+    const label = WORLD_NAMES[worldIndex];
+    ctx.fillStyle = accent;
     ctx.font = '5px Arial, sans-serif';
-    ctx.fillText(label, W / 2 - label.length * 1.5, H - 6);
+    const lw = ctx.measureText(label).width;
+    ctx.fillText(label, (W - lw) / 2, H - 3);
 
-    // Mode indicator (debug, can remove)
-    // ctx.fillText(mode, W - 40, H - 6);
+    // ── Speed boost bar ─────────────────────────────────────────────────────
+    if (player.boostTimer > 0) {
+      const bPct = Math.min(1, player.boostTimer / 4);
+      const bW = 50, bH = 4, bX = W - bW - 4, bY = H - 14;
+      ctx.fillStyle = '#111';
+      ctx.fillRect(bX - 1, bY - 1, bW + 2, bH + 2);
+      ctx.fillStyle = `rgba(160,220,255,${0.7 + 0.3 * Math.sin(Date.now() / 120)})`;
+      ctx.fillRect(bX, bY, (bW * bPct) | 0, bH);
+      ctx.strokeStyle = 'rgba(160,220,255,0.8)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bX - 0.5, bY - 0.5, bW + 1, bH + 1);
+      ctx.fillStyle = '#aaddff';
+      ctx.font = 'bold 5px Arial, sans-serif';
+      ctx.fillText('BOOST', bX + 1, bY - 2);
+    }
   }
 
   return { draw };

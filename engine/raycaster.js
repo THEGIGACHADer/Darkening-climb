@@ -17,25 +17,45 @@ const Raycaster = (() => {
     data[i] = r; data[i+1] = g; data[i+2] = b; data[i+3] = 255;
   }
 
-  function wallTexColor(side, hitX, dist) {
+  // Per-world wall palette: [mortarR,mortarG,mortarB, stoneR,stoneG,stoneB]
+  const WALL_PAL = [
+    [90, 118, 80,   78, 100, 68],   // W0 Slime Caves — mossy green stone
+    [118, 108, 90,  102,  92, 72],  // W1 Zombie Graveyard — warm grey-brown
+    [100,  80, 128,  80,  68, 108], // W2 Haunted Dungeon — purple stone
+    [138,  72,  52,  110,  56, 36], // W3 Final Fortress — dark red-orange
+  ];
+
+  function wallTexColor(side, hitX, dist, world) {
     const tx = Math.floor(hitX * 8) & 7;
     const isMortar = tx === 0 || tx === 4;
+    const pal = WALL_PAL[world] || WALL_PAL[0];
     let r, g, b;
-    if (isMortar) { r = 120; g = 128; b = 142; }   // brighter mortar
-    else {
-      const v = 95 + (tx * 7) % 28;                 // brighter stone base
-      r = v; g = v + 6; b = v + 16;
+    if (isMortar) {
+      r = pal[0]; g = pal[1]; b = pal[2];
+    } else {
+      const v = (tx * 7) % 28;
+      r = pal[3] + v; g = pal[4] + v; b = pal[5] + v;
     }
     if (side === 1) { r = r * 0.72 | 0; g = g * 0.72 | 0; b = b * 0.72 | 0; }
-    const shade = Math.min(1, 6.0 / dist);           // brighter falloff
+    const shade = Math.min(1, 6.0 / dist);
     return [r * shade | 0, g * shade | 0, b * shade | 0];
   }
+
+  // Per-world ceiling/floor tints: [cR,cG,cB, fR,fG,fB] as floats
+  const ENV_TINTS = [
+    [0.22, 0.40, 0.22,  0.38, 0.52, 0.28], // W0 Slime Caves
+    [0.28, 0.30, 0.42,  0.48, 0.42, 0.32], // W1 Zombie Graveyard
+    [0.36, 0.24, 0.52,  0.38, 0.32, 0.48], // W2 Haunted Dungeon
+    [0.52, 0.20, 0.12,  0.55, 0.30, 0.18], // W3 Final Fortress
+  ];
 
   // horizon = H/2 + pitch  (pitch>0 = look up = horizon shifts down = more ceiling visible)
   function render(level, player, enemies, bullets, flashAlpha) {
     const data = imageData.data;
     const pitch = player.pitch || 0;
     const horizonY = H / 2 + pitch;
+    const world = level.worldIndex || 0;
+    const tint = ENV_TINTS[world];
 
     const dirX = Math.cos(player.angle), dirY = Math.sin(player.angle);
     const planeX = -dirY * PLANE_LEN, planeY = dirX * PLANE_LEN;
@@ -46,9 +66,9 @@ const Raycaster = (() => {
       const shade = (40 + y * 45 / hSafe) | 0;
       for (let x = 0; x < W; x++) {
         const i = (y * W + x) * 4;
-        data[i]   = shade * 0.30 | 0;
-        data[i+1] = shade * 0.33 | 0;
-        data[i+2] = shade * 0.44 | 0;
+        data[i]   = shade * tint[0] | 0;
+        data[i+1] = shade * tint[1] | 0;
+        data[i+2] = shade * tint[2] | 0;
         data[i+3] = 255;
       }
     }
@@ -59,9 +79,9 @@ const Raycaster = (() => {
       const shade = (40 + (H - y) * 45 / fSafe) | 0;
       for (let x = 0; x < W; x++) {
         const i = (y * W + x) * 4;
-        data[i]   = shade * 0.52 | 0;
-        data[i+1] = shade * 0.50 | 0;
-        data[i+2] = shade * 0.46 | 0;
+        data[i]   = shade * tint[3] | 0;
+        data[i+1] = shade * tint[4] | 0;
+        data[i+2] = shade * tint[5] | 0;
         data[i+3] = 255;
       }
     }
@@ -112,7 +132,7 @@ const Raycaster = (() => {
           ? player.y + perpDist * rdy
           : player.x + perpDist * rdx;
         const hitFrac = wallHit - Math.floor(wallHit);
-        [r, g, b] = wallTexColor(side, hitFrac, perpDist);
+        [r, g, b] = wallTexColor(side, hitFrac, perpDist, world);
       }
 
       const drawTop = Math.max(0, wallTop);
@@ -190,8 +210,11 @@ const Raycaster = (() => {
 
     ctx.putImageData(imageData, 0, 0);
 
-    // Vine overlay hanging from ceiling
-    drawCeilingVines(ctx);
+    // World-specific ceiling overlay
+    if      (world === 0) drawCeilingVines(ctx);
+    else if (world === 1) drawCeilingBones(ctx);
+    else if (world === 2) drawCeilingWebs(ctx);
+    else if (world === 3) drawCeilingSoot(ctx);
 
     // Third-person player model at bottom-center
     drawPlayerModel(ctx, W, H, pitch);
@@ -241,6 +264,65 @@ const Raycaster = (() => {
         drawLeaf(ctx, lx, ly, Math.sin(t * 9) > 0 ? 1 : -1);
       }
     }
+  }
+
+  function drawCeilingBones(ctx) {
+    // Zombie Graveyard — hanging chains + bone clumps
+    const chains = [{ x: 42, len: 28 }, { x: 120, len: 18 }, { x: 198, len: 32 }, { x: 270, len: 22 }];
+    for (const c of chains) {
+      ctx.strokeStyle = 'rgba(140,120,90,0.70)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath(); ctx.moveTo(c.x, 0); ctx.lineTo(c.x, c.len); ctx.stroke();
+      ctx.setLineDash([]);
+      // Bone end
+      ctx.fillStyle = 'rgba(190,170,140,0.80)';
+      ctx.beginPath(); ctx.arc(c.x, c.len, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(c.x - 3, c.len + 4, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(c.x + 3, c.len + 4, 2, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function drawCeilingWebs(ctx) {
+    // Haunted Dungeon — spider webs at upper corners + center
+    const spots = [{ x: 12, r: 18 }, { x: W - 12, r: 16 }, { x: W / 2, r: 14 }];
+    ctx.strokeStyle = 'rgba(210,200,230,0.38)';
+    ctx.lineWidth = 0.5;
+    for (const s of spots) {
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+        ctx.beginPath();
+        ctx.moveTo(s.x, 0);
+        ctx.lineTo(s.x + Math.cos(a) * s.r, Math.sin(a < Math.PI ? a : Math.PI - a) * s.r);
+        ctx.stroke();
+      }
+      for (let ring = 1; ring <= 3; ring++) {
+        const fr = ring / 3;
+        ctx.beginPath();
+        for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+          const px = s.x + Math.cos(a) * s.r * fr;
+          const py = Math.sin(a < Math.PI ? a : Math.PI - a) * s.r * fr;
+          a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.closePath(); ctx.stroke();
+      }
+    }
+  }
+
+  function drawCeilingSoot(ctx) {
+    // Final Fortress — scorch marks + ember drips
+    const marks = [{ x: 55, w: 30 }, { x: 145, w: 22 }, { x: 230, w: 28 }, { x: 290, w: 18 }];
+    for (const m of marks) {
+      const g = ctx.createRadialGradient(m.x, 0, 0, m.x, 0, m.w);
+      g.addColorStop(0, 'rgba(255,80,0,0.18)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(m.x - m.w, 0, m.w * 2, m.w);
+    }
+    // Ember drips
+    ctx.fillStyle = 'rgba(255,120,0,0.55)';
+    [[60,8],[152,5],[235,9],[285,6]].forEach(([x,y]) => {
+      ctx.beginPath(); ctx.ellipse(x, y, 1.5, 3, 0, 0, Math.PI * 2); ctx.fill();
+    });
   }
 
   function drawPlayerModel(ctx, W, H, pitch) {
