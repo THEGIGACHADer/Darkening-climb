@@ -302,32 +302,21 @@ const _LAYOUTS = [
 
 // ─── Hideout hole placement ──────────────────────────────────────────────────
 function _placeHoles(g, rng) {
-  function wallAt(r, c) {
-    return r < 0 || r >= _IH || c < 0 || c >= _IW || g[r][c] === '#';
+  const cells = [];
+  for (let r = 0; r < _IH; r++)
+    for (let c = 0; c < _IW; c++)
+      if (g[r][c] === '.' && !(r < 3 && c < 3) && !(r >= _IH - 3 && c >= _IW - 3))
+        cells.push([r, c]);
+
+  // Fisher-Yates shuffle
+  for (let i = cells.length - 1; i > 0; i--) {
+    const j = rng() * (i + 1) | 0;
+    [cells[i], cells[j]] = [cells[j], cells[i]];
   }
-  const nooks = [];
-  for (let r = 1; r < _IH - 1; r++) {
-    for (let c = 1; c < _IW - 1; c++) {
-      if (g[r][c] !== '.') continue;
-      if (r < 3 && c < 3) continue;
-      if (r > _IH - 4 && c > _IW - 4) continue;
-      let wc = 0;
-      if (wallAt(r-1,c)) wc++;
-      if (wallAt(r+1,c)) wc++;
-      if (wallAt(r,c-1)) wc++;
-      if (wallAt(r,c+1)) wc++;
-      if (wc >= 2) nooks.push([r, c, wc]);
-    }
-  }
-  nooks.sort((a, b) => a[2] - b[2]);
+
   const count = 35 + (rng() * 5 | 0);
-  const picked = [];
-  for (const [r, c] of nooks) {
-    if (picked.length >= count) break;
-    const tooClose = picked.some(([pr, pc]) => Math.abs(pr - r) + Math.abs(pc - c) < 1);
-    if (!tooClose) picked.push([r, c]);
-  }
-  for (const [r, c] of picked) g[r][c] = 'H';
+  for (let i = 0; i < count && i < cells.length; i++)
+    g[cells[i][0]][cells[i][1]] = 'H';
 }
 
 // ─── Crusher placement ───────────────────────────────────────────────────────
