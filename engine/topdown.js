@@ -303,7 +303,7 @@ const TopDown = (() => {
           ctx.fillStyle = urgent ? '#ff2200' : '#ffcc00';
           ctx.font = `bold ${urgent ? 8 : 7}px Arial, sans-serif`;
           ctx.textAlign = 'center';
-          ctx.fillText('LIGHTS OUT — HIDE  [ H ]', W / 2, 22);
+          ctx.fillText('LIGHTS OUT — HIDE  [ G ]', W / 2, 22);
           ctx.textAlign = 'left';
           ctx.restore();
         }

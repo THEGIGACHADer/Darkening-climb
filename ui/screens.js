@@ -77,7 +77,7 @@ const Screens = (() => {
       '← →  —  Rotate',
       'W  —  Jump  (boss fights)',
       'Space  —  Shoot',
-      'H  —  Hide  (figure event)',
+      'G  —  Hide  (figure event)',
       'Enter  —  Pause',
     ];
     controls.forEach((line, i) => centeredText(ctx, line, 105 + i*12, 6, '#bbaa88'));

@@ -252,7 +252,7 @@ function update(dt) {
             const dx = h.x - player.x, dy = h.y - player.y;
             return dx*dx + dy*dy < 0.45*0.45;
           });
-          flickerEvent.hiding = nearHole && Input.isDown('KeyH');
+          flickerEvent.hiding = nearHole && Input.isDown('KeyG');
           if (flickerEvent.t >= 5 && !flickerEvent.swept) {
             flickerEvent.swept = true;
             if (!flickerEvent.hiding && !devInvincible) {
