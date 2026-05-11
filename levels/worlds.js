@@ -320,11 +320,11 @@ function _placeHoles(g, rng) {
     }
   }
   nooks.sort((a, b) => a[2] - b[2]);
-  const count = 4 + (rng() * 3 | 0);
+  const count = 12 + (rng() * 8 | 0);
   const picked = [];
   for (const [r, c] of nooks) {
     if (picked.length >= count) break;
-    const tooClose = picked.some(([pr, pc]) => Math.abs(pr - r) + Math.abs(pc - c) < 4);
+    const tooClose = picked.some(([pr, pc]) => Math.abs(pr - r) + Math.abs(pc - c) < 2);
     if (!tooClose) picked.push([r, c]);
   }
   for (const [r, c] of picked) g[r][c] = 'H';
