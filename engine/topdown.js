@@ -151,6 +151,7 @@ const TopDown = (() => {
     }
 
     // Moving crusher walls
+    const now = Date.now();
     const cpulse = 0.5 + 0.5 * Math.sin(now / 280);
     for (const c of (level.crushers || [])) {
       for (let i = 0; i < c.length; i++) {
@@ -173,7 +174,6 @@ const TopDown = (() => {
     }
 
     // Speed boost pickups (lightning bolt)
-    const now = Date.now();
     const pulse = 0.7 + 0.3 * Math.sin(now / 200);
     for (const b of (level.boosts || [])) {
       const bx = b.x * TS, by = b.y * TS;
