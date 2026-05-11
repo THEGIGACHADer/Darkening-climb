@@ -319,7 +319,7 @@ function _placeHoles(g, rng) {
       if (wc >= 2) nooks.push([r, c, wc]);
     }
   }
-  nooks.sort((a, b) => b[2] - a[2]);
+  nooks.sort((a, b) => a[2] - b[2]);
   const count = 4 + (rng() * 3 | 0);
   const picked = [];
   for (const [r, c] of nooks) {
