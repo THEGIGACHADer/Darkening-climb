@@ -237,6 +237,8 @@ function update(dt) {
       const crusherDmg = level.updateCrushers(dt, player.x, player.y);
       if (!devInvincible && crusherDmg > 0) Player.takeDamage(player, crusherDmg, 'darkness');
 
+      player.hiding = false;
+
       // Figure event
       if (!level.isBossLevel && (level.holes || []).length > 0) {
         flickerCooldown = Math.max(0, flickerCooldown - dt);
@@ -250,9 +252,10 @@ function update(dt) {
           flickerEvent.t += dt;
           const nearHole = (level.holes || []).some(h => {
             const dx = h.x - player.x, dy = h.y - player.y;
-            return dx*dx + dy*dy < 0.45*0.45;
+            return dx*dx + dy*dy < 0.9*0.9;
           });
           flickerEvent.hiding = nearHole && Input.isDown('KeyG');
+          player.hiding = flickerEvent.hiding;
           if (flickerEvent.t >= 5 && !flickerEvent.swept) {
             flickerEvent.swept = true;
             if (!flickerEvent.hiding && !devInvincible) {
@@ -268,19 +271,10 @@ function update(dt) {
       // Speed boost pickup
       if (level.collectBoost(player.x, player.y)) player.boostTimer = 4;
 
-      // Check exit tile
-      if (level.isExit(player.x, player.y)) {
-        if (level.isBossLevel) {
-          setState(STATE.BOSS_INTRO);
-        } else {
-          advanceLevel();
-        }
-      }
-
       if (devNoDarkness) vigFade = 12;
       else vigFade = Math.max(0, vigFade - Math.sqrt(vigFade) * 0.17 * dt);
 
-      // Game over
+      // Game over — check before exit so death can't be skipped by standing on exit
       if (!devInvincible) {
         if (player.hp <= 0) {
           deathCause = player.lastHitBy || 'darkness';
@@ -288,6 +282,15 @@ function update(dt) {
         } else if (vigFade <= 0.5) {
           deathCause = 'darkness';
           setState(STATE.DEATH_ANIM);
+        }
+      }
+
+      // Check exit tile (only if still alive)
+      if (state === STATE.PLAYING && level.isExit(player.x, player.y)) {
+        if (level.isBossLevel) {
+          setState(STATE.BOSS_INTRO);
+        } else {
+          advanceLevel();
         }
       }
       break;

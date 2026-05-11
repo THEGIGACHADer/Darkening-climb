@@ -164,6 +164,9 @@ const TopDown = (() => {
       ctx.beginPath(); ctx.arc(h.x * TS, h.y * TS, 2.5, 0, Math.PI * 2); ctx.fill();
     }
 
+    // Moving crusher walls
+    const now = Date.now();
+
     // Hole pulse glow during flicker warning
     if (flickerEvent && flickerEvent.t < 5) {
       const fp = flickerEvent.t / 5;
@@ -173,9 +176,6 @@ const TopDown = (() => {
         ctx.beginPath(); ctx.arc(h.x * TS, h.y * TS, TS * 0.7, 0, Math.PI * 2); ctx.fill();
       }
     }
-
-    // Moving crusher walls
-    const now = Date.now();
     const cpulse = 0.5 + 0.5 * Math.sin(now / 280);
     for (const c of (level.crushers || [])) {
       for (let i = 0; i < c.length; i++) {
@@ -291,7 +291,7 @@ const TopDown = (() => {
       if (fe.t < 5) {
         // Warning phase — screen flickers and dims
         const prog = fe.t / 5;
-        const flick = Math.sin(now * 0.016 * (1 + prog * 10)) > 0.55 - prog * 0.45;
+        const flick = Math.sin(now / 500 * (1 + prog * 2)) > 0.3;
         if (flick) {
           ctx.fillStyle = `rgba(0,0,0,${0.28 + prog * 0.52})`;
           ctx.fillRect(0, 0, W, H);

@@ -117,6 +117,14 @@ const Level = (() => {
         if (col < 0 || col >= this.grid[row].length) return false;
         return this.grid[row][col] === 8;
       },
+
+      isHole(x, y) {
+        const col = Math.floor(x), row = Math.floor(y);
+        for (const h of this.holes) {
+          if (Math.floor(h.x) === col && Math.floor(h.y) === row) return true;
+        }
+        return false;
+      },
     };
   }
 

@@ -28,14 +28,14 @@ const Zombie = (() => {
     if (dist > 0.7) {
       const nx = z.x + (dx / dist) * z.speed * dt;
       const ny = z.y + (dy / dist) * z.speed * dt;
-      if (!level.isWall(nx, z.y) && !level.isWall(nx, z.y + 0.2) && !level.isWall(nx, z.y - 0.2))
+      if (!level.isWall(nx, z.y) && !level.isWall(nx, z.y + 0.2) && !level.isWall(nx, z.y - 0.2) && !level.isHole(nx, z.y))
         z.x = nx;
-      if (!level.isWall(z.x, ny) && !level.isWall(z.x + 0.2, ny) && !level.isWall(z.x - 0.2, ny))
+      if (!level.isWall(z.x, ny) && !level.isWall(z.x + 0.2, ny) && !level.isWall(z.x - 0.2, ny) && !level.isHole(z.x, ny))
         z.y = ny;
     }
 
     // Melee attack
-    if (dist < 0.75 && z.attackCooldown === 0) {
+    if (!player.hiding && dist < 0.75 && z.attackCooldown === 0) {
       Player.takeDamage(player, z.meleeDamage, 'zombie');
       z.attackCooldown = 1.2;
     }

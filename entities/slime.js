@@ -78,7 +78,7 @@ const Slime = (() => {
     const ny = s.y + s.hopVy * dt;
 
     // X movement — or animated jump over a 1-tile wall
-    if (!level.isWall(nx, s.y) && !level.isWall(nx, s.y + 0.2) && !level.isWall(nx, s.y - 0.2)) {
+    if (!level.isWall(nx, s.y) && !level.isWall(nx, s.y + 0.2) && !level.isWall(nx, s.y - 0.2) && !level.isHole(nx, s.y)) {
       s.x = nx;
     } else if (Math.abs(s.hopVx) > 1.0) {
       const dir = s.hopVx > 0 ? 1 : -1;
@@ -93,7 +93,7 @@ const Slime = (() => {
 
     // Y movement — same animated jump, only if not already jumping from X
     if (!s.jumping) {
-      if (!level.isWall(s.x, ny) && !level.isWall(s.x + 0.2, ny) && !level.isWall(s.x - 0.2, ny)) {
+      if (!level.isWall(s.x, ny) && !level.isWall(s.x + 0.2, ny) && !level.isWall(s.x - 0.2, ny) && !level.isHole(s.x, ny)) {
         s.y = ny;
       } else if (Math.abs(s.hopVy) > 1.0) {
         const dir = s.hopVy > 0 ? 1 : -1;
@@ -112,7 +112,7 @@ const Slime = (() => {
 
     // Contact damage (only when not jumping)
     const pdx = player.x - s.x, pdy = player.y - s.y;
-    if (pdx*pdx + pdy*pdy < 0.5 * 0.5 && s.attackCooldown === 0) {
+    if (!player.hiding && pdx*pdx + pdy*pdy < 0.5 * 0.5 && s.attackCooldown === 0) {
       Player.takeDamage(player, s.contactDamage, 'slime');
       s.attackCooldown = 0.8;
     }
