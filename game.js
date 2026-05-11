@@ -229,6 +229,10 @@ function update(dt) {
       for (const b of bullets) Bullet.update3D(b, dt, level, level.enemies);
       bullets = bullets.filter(b => !b.dead);
 
+      // Moving crusher walls
+      const crusherDmg = level.updateCrushers(dt, player.x, player.y);
+      if (!devInvincible && crusherDmg > 0) Player.takeDamage(player, crusherDmg, 'darkness');
+
       // Speed boost pickup
       if (level.collectBoost(player.x, player.y)) player.boostTimer = 4;
 

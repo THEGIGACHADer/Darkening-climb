@@ -23,7 +23,7 @@ const Level = (() => {
       grid.push(gridRow);
     }
 
-    return { grid, enemySpawns, boostPositions, playerStart, worldIndex: def.worldIndex, levelInWorld: def.levelInWorld };
+    return { grid, enemySpawns, boostPositions, playerStart, worldIndex: def.worldIndex, levelInWorld: def.levelInWorld, crushers: def.crushers || [] };
   }
 
   function build(def, worldSpeed) {
@@ -44,6 +44,7 @@ const Level = (() => {
       grid: data.grid,
       enemies,
       boosts: data.boostPositions.slice(),
+      crushers: data.crushers.map(c => Object.assign({}, c)),
       playerStart: data.playerStart,
       worldIndex: data.worldIndex,
       levelInWorld: data.levelInWorld,
@@ -53,7 +54,34 @@ const Level = (() => {
         const col = Math.floor(x), row = Math.floor(y);
         if (row < 0 || row >= this.grid.length) return true;
         if (col < 0 || col >= this.grid[row].length) return true;
-        return this.grid[row][col] === 1;
+        if (this.grid[row][col] === 1) return true;
+        for (const c of this.crushers) {
+          const p0 = Math.floor(c.pos), p1 = p0 + c.length - 1;
+          if (c.axis === 'v') { if (col === c.fixed && row >= p0 && row <= p1) return true; }
+          else                { if (row === c.fixed && col >= p0 && col <= p1) return true; }
+        }
+        return false;
+      },
+
+      updateCrushers(dt, px, py) {
+        let dmg = 0;
+        for (const c of this.crushers) {
+          const target = c.axis === 'v' ? py : px;
+          const mid = c.pos + c.length / 2;
+          const diff = target - mid;
+          c.pos = Math.max(c.min, Math.min(c.max, c.pos + Math.sign(diff) * Math.min(Math.abs(diff), c.speed * dt)));
+
+          c.dmgCooldown = Math.max(0, c.dmgCooldown - dt);
+          if (c.dmgCooldown <= 0) {
+            const perp = c.axis === 'v' ? Math.abs(px - (c.fixed + 0.5)) : Math.abs(py - (c.fixed + 0.5));
+            const par  = c.axis === 'v' ? py : px;
+            if (perp < 0.72 && par >= c.pos - 0.4 && par <= c.pos + c.length + 0.4) {
+              c.dmgCooldown = 0.75;
+              dmg += 25;
+            }
+          }
+        }
+        return dmg;
       },
 
       // Used by raycaster: walls AND exits are visually solid

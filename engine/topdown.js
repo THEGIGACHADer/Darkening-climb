@@ -150,6 +150,28 @@ const TopDown = (() => {
       }
     }
 
+    // Moving crusher walls
+    const cpulse = 0.5 + 0.5 * Math.sin(now / 280);
+    for (const c of (level.crushers || [])) {
+      for (let i = 0; i < c.length; i++) {
+        const col = c.axis === 'v' ? c.fixed : Math.floor(c.pos) + i;
+        const row = c.axis === 'v' ? Math.floor(c.pos) + i : c.fixed;
+        const cx = col * TS, cy = row * TS;
+        ctx.fillStyle = '#1a0000';
+        ctx.fillRect(cx + 2, cy + 2, TS, TS);
+        ctx.fillStyle = '#7a2828';
+        ctx.fillRect(cx, cy, TS, TS);
+        ctx.fillStyle = `rgba(255,50,0,${0.22 + cpulse * 0.22})`;
+        ctx.fillRect(cx + 2, cy + 2, TS - 4, TS - 4);
+        ctx.fillStyle = '#b05050';
+        ctx.fillRect(cx, cy, TS, 2);
+        ctx.fillRect(cx, cy, 2, TS);
+        ctx.fillStyle = '#4a1010';
+        ctx.fillRect(cx, cy + TS - 2, TS, 2);
+        ctx.fillRect(cx + TS - 2, cy, 2, TS);
+      }
+    }
+
     // Speed boost pickups (lightning bolt)
     const now = Date.now();
     const pulse = 0.7 + 0.3 * Math.sin(now / 200);

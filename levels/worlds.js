@@ -300,6 +300,54 @@ const _LAYOUTS = [
   },
 ];
 
+// ─── Crusher placement ───────────────────────────────────────────────────────
+function _placeCrushers(g, rng, worldIndex, levelInWorld) {
+  if (levelInWorld === 4) return [];
+  const count = 1 + (levelInWorld >= 2 ? 1 : 0);
+  const crushers = [];
+  const used = new Set();
+  let attempts = 0;
+
+  while (crushers.length < count && attempts < 80) {
+    attempts++;
+    const axis = rng() < 0.5 ? 'v' : 'h';
+    const fixed = 3 + (rng() * (axis === 'v' ? _IW - 8 : _IH - 8) | 0);
+    const key = axis + fixed;
+    if (used.has(key)) continue;
+
+    // Find longest open run along this col/row
+    let best = { start: -1, len: 0 }, cur = { start: -1, len: 0 };
+    const limit = axis === 'v' ? _IH : _IW;
+    for (let i = 0; i < limit; i++) {
+      const open = axis === 'v' ? g[i][fixed] !== '#' : g[fixed][i] !== '#';
+      if (open) {
+        if (cur.start === -1) cur.start = i;
+        cur.len++;
+        if (cur.len > best.len) best = { start: cur.start, len: cur.len };
+      } else { cur = { start: -1, len: 0 }; }
+    }
+
+    if (best.len < 6) continue;
+
+    // +1 offsets to match full-map tile coords (border adds 1 row/col)
+    const min = best.start + 1;
+    const max = best.start + best.len - 2 + 1;
+    if (max <= min) continue;
+
+    used.add(key);
+    crushers.push({
+      axis,
+      fixed: fixed + 1,
+      length: 2,
+      min, max,
+      pos: min + rng() * (max - min),
+      speed: 3.0 + worldIndex * 0.65,
+      dmgCooldown: 0,
+    });
+  }
+  return crushers;
+}
+
 // ─── Boost placement ─────────────────────────────────────────────────────────
 function _placeBoosts(g, rng) {
   const cells = [];
@@ -373,6 +421,7 @@ function getLevelDef(levelIndex) {
     levelInWorld,
     playerStart: { x: 1.5, y: 1.5, angle: 0 },
     map: _buildMap(g),
+    crushers: _placeCrushers(g, rng, worldIndex, levelInWorld),
   };
 }
 
