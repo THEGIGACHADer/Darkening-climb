@@ -289,11 +289,13 @@ const TopDown = (() => {
     if (flickerEvent) {
       const fe = flickerEvent;
       if (fe.t < 5) {
-        // Warning phase — screen flickers and dims
+        // Warning phase — sudden blackout blinks, lights-on otherwise
         const prog = fe.t / 5;
-        const flick = Math.sin(now / 500 * (1 + prog * 2)) > 0.3;
-        if (flick) {
-          ctx.fillStyle = `rgba(0,0,0,${0.28 + prog * 0.52})`;
+        const block = Math.floor(now / 75);
+        const h = (Math.imul(block, 2654435761) ^ (block >>> 16)) >>> 0;
+        const p = 0.04 + prog * 0.24;
+        if (h / 0xFFFFFFFF < p) {
+          ctx.fillStyle = 'rgba(0,0,0,0.93)';
           ctx.fillRect(0, 0, W, H);
         }
       } else if (fe.t < 6.5) {
