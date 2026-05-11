@@ -296,17 +296,6 @@ const TopDown = (() => {
           ctx.fillStyle = `rgba(0,0,0,${0.28 + prog * 0.52})`;
           ctx.fillRect(0, 0, W, H);
         }
-        // Warning text — blinks, turns red in final 2s
-        if ((now / 380 | 0) % 2 === 0) {
-          const urgent = fe.t > 3;
-          ctx.save();
-          ctx.fillStyle = urgent ? '#ff2200' : '#ffcc00';
-          ctx.font = `bold ${urgent ? 8 : 7}px Arial, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.fillText('LIGHTS OUT — HIDE  [ G ]', W / 2, 22);
-          ctx.textAlign = 'left';
-          ctx.restore();
-        }
       } else if (fe.t < 6.5) {
         // Storm phase — near-blackout + razor-thin figure
         ctx.fillStyle = 'rgba(0,0,0,0.94)';
