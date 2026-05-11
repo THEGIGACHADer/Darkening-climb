@@ -330,9 +330,10 @@ function _placeCrushers(g, rng, worldIndex, levelInWorld) {
     if (best.len < 6) continue;
 
     // +1 offsets to match full-map tile coords (border adds 1 row/col)
-    const min = best.start + 1;
+    // min clamped to 4 so crushers never reach the player start zone (rows/cols 1-3)
+    const min = Math.max(best.start + 1, 4);
     const max = best.start + best.len - 2 + 1;
-    if (max <= min) continue;
+    if (max <= min + 1) continue;
 
     used.add(key);
     crushers.push({
@@ -341,6 +342,7 @@ function _placeCrushers(g, rng, worldIndex, levelInWorld) {
       length: 2,
       min, max,
       pos: min + rng() * (max - min),
+      dir: rng() < 0.5 ? 1 : -1,
       speed: 3.0 + worldIndex * 0.65,
       dmgCooldown: 0,
     });

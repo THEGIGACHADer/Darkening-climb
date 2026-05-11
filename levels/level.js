@@ -66,10 +66,9 @@ const Level = (() => {
       updateCrushers(dt, px, py) {
         let dmg = 0;
         for (const c of this.crushers) {
-          const target = c.axis === 'v' ? py : px;
-          const mid = c.pos + c.length / 2;
-          const diff = target - mid;
-          c.pos = Math.max(c.min, Math.min(c.max, c.pos + Math.sign(diff) * Math.min(Math.abs(diff), c.speed * dt)));
+          c.pos += c.dir * c.speed * dt;
+          if (c.pos <= c.min) { c.pos = c.min; c.dir = 1; }
+          else if (c.pos >= c.max) { c.pos = c.max; c.dir = -1; }
 
           c.dmgCooldown = Math.max(0, c.dmgCooldown - dt);
           if (c.dmgCooldown <= 0) {
