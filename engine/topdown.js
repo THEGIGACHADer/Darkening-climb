@@ -129,7 +129,7 @@ const TopDown = (() => {
     }
   }
 
-  function render(level, player, enemies, bullets, flashAlpha, fadeTiles = 12) {
+  function render(level, player, enemies, bullets, flashAlpha, fadeTiles = 12, flickerEvent = null) {
     _world = level.worldIndex || 0;
     ctx.fillStyle = '#0a0a14';
     ctx.fillRect(0, 0, W, H);
@@ -147,6 +147,30 @@ const TopDown = (() => {
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         drawTile(level.grid[row][col], col * TS, row * TS);
+      }
+    }
+
+    // Hideout holes — dark alcove recesses in walls
+    for (const h of (level.holes || [])) {
+      const hx = (h.x - 0.5) * TS, hy = (h.y - 0.5) * TS;
+      ctx.fillStyle = '#060608';
+      ctx.fillRect(hx, hy, TS, TS);
+      ctx.fillStyle = '#111118';
+      ctx.fillRect(hx + 2, hy + 2, TS - 4, TS - 4);
+      ctx.strokeStyle = 'rgba(90,100,160,0.55)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hx + 1.5, hy + 1.5, TS - 3, TS - 3);
+      ctx.fillStyle = 'rgba(120,140,220,0.30)';
+      ctx.beginPath(); ctx.arc(h.x * TS, h.y * TS, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Hole pulse glow during flicker warning
+    if (flickerEvent && flickerEvent.t < 5) {
+      const fp = flickerEvent.t / 5;
+      const hglow = 0.35 + 0.35 * Math.sin(now / 140);
+      for (const h of (level.holes || [])) {
+        ctx.fillStyle = `rgba(100,120,255,${(0.2 + fp * 0.45) * hglow})`;
+        ctx.beginPath(); ctx.arc(h.x * TS, h.y * TS, TS * 0.7, 0, Math.PI * 2); ctx.fill();
       }
     }
 
@@ -259,6 +283,55 @@ const TopDown = (() => {
       ctx.fillText('>> SPEED BOOST <<', W / 2, 18);
       ctx.textAlign = 'left';
       ctx.restore();
+    }
+
+    // Flicker event overlays
+    if (flickerEvent) {
+      const fe = flickerEvent;
+      if (fe.t < 5) {
+        // Warning phase — screen flickers and dims
+        const prog = fe.t / 5;
+        const flick = Math.sin(now * 0.016 * (1 + prog * 10)) > 0.55 - prog * 0.45;
+        if (flick) {
+          ctx.fillStyle = `rgba(0,0,0,${0.28 + prog * 0.52})`;
+          ctx.fillRect(0, 0, W, H);
+        }
+        // Warning text — blinks, turns red in final 2s
+        if ((now / 380 | 0) % 2 === 0) {
+          const urgent = fe.t > 3;
+          ctx.save();
+          ctx.fillStyle = urgent ? '#ff2200' : '#ffcc00';
+          ctx.font = `bold ${urgent ? 8 : 7}px Arial, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText('LIGHTS OUT — HIDE  [ H ]', W / 2, 22);
+          ctx.textAlign = 'left';
+          ctx.restore();
+        }
+      } else if (fe.t < 6.5) {
+        // Storm phase — near-blackout + razor-thin figure
+        ctx.fillStyle = 'rgba(0,0,0,0.94)';
+        ctx.fillRect(0, 0, W, H);
+        const sp = Math.min(1, (fe.t - 5));
+        if (sp < 1) {
+          const sx = sp * sp * (W + 12); // ease-in sweep
+          ctx.fillStyle = 'rgba(18,22,48,0.75)';
+          ctx.fillRect(sx - 14, 0, 12, H);  // shadow trail
+          ctx.fillStyle = 'rgba(210,225,255,0.92)';
+          ctx.fillRect(sx,     0, 1, H);    // core — the figure
+          ctx.fillStyle = 'rgba(140,170,255,0.50)';
+          ctx.fillRect(sx - 1, 0, 1, H);
+          ctx.fillRect(sx + 1, 0, 1, H);
+        }
+        if (fe.hiding) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(50,200,80,0.88)';
+          ctx.font = 'bold 7px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('HIDDEN', W / 2, 22);
+          ctx.textAlign = 'left';
+          ctx.restore();
+        }
+      }
     }
 
     // Hit flash overlay

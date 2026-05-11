@@ -77,6 +77,7 @@ const Screens = (() => {
       '← →  —  Rotate',
       'W  —  Jump  (boss fights)',
       'Space  —  Shoot',
+      'H  —  Hide  (figure event)',
       'Enter  —  Pause',
     ];
     controls.forEach((line, i) => centeredText(ctx, line, 105 + i*12, 6, '#bbaa88'));
@@ -219,7 +220,7 @@ const Screens = (() => {
     }
   }
 
-  const DEATH_NAMES = ['slime', 'zombie', 'darkness', 'slimeQueen', 'zombieKing', 'necromancer', 'darkOverlord'];
+  const DEATH_NAMES = ['slime', 'zombie', 'darkness', 'slimeQueen', 'zombieKing', 'necromancer', 'darkOverlord', 'figure'];
 
   function drawPaused(ctx, devInfo) {
     ctx.fillStyle = 'rgba(0,0,0,0.65)';

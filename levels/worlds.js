@@ -300,6 +300,36 @@ const _LAYOUTS = [
   },
 ];
 
+// ─── Hideout hole placement ──────────────────────────────────────────────────
+function _placeHoles(g, rng) {
+  function wallAt(r, c) {
+    return r < 0 || r >= _IH || c < 0 || c >= _IW || g[r][c] === '#';
+  }
+  const nooks = [];
+  for (let r = 1; r < _IH - 1; r++) {
+    for (let c = 1; c < _IW - 1; c++) {
+      if (g[r][c] !== '.') continue;
+      if (r < 3 && c < 3) continue;
+      if (r > _IH - 4 && c > _IW - 4) continue;
+      let wc = 0;
+      if (wallAt(r-1,c)) wc++;
+      if (wallAt(r+1,c)) wc++;
+      if (wallAt(r,c-1)) wc++;
+      if (wallAt(r,c+1)) wc++;
+      if (wc >= 2) nooks.push([r, c, wc]);
+    }
+  }
+  nooks.sort((a, b) => b[2] - a[2]);
+  const count = 2 + (rng() < 0.5 ? 1 : 0);
+  const picked = [];
+  for (const [r, c] of nooks) {
+    if (picked.length >= count) break;
+    const tooClose = picked.some(([pr, pc]) => Math.abs(pr - r) + Math.abs(pc - c) < 5);
+    if (!tooClose) picked.push([r, c]);
+  }
+  for (const [r, c] of picked) g[r][c] = 'H';
+}
+
 // ─── Crusher placement ───────────────────────────────────────────────────────
 function _placeCrushers(g, rng, worldIndex, levelInWorld) {
   if (levelInWorld === 4) return [];
@@ -415,6 +445,7 @@ function getLevelDef(levelIndex) {
   const g = _blank();
   layout.fn(g, rng);
   _clearZones(g);
+  _placeHoles(g, rng);
   _placeEnemies(g, rng, worldIndex, levelInWorld);
   _placeBoosts(g, rng);
 

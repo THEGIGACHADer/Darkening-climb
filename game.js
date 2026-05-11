@@ -48,6 +48,8 @@ let bossIntroTimer;
 let worldClearTimer;
 let vigFade;
 let deathCause, deathTimer, lastGameOffscreen;
+let flickerEvent = null;
+let flickerCooldown = 8;
 
 function startGame() {
   newRun();
@@ -69,6 +71,8 @@ function loadLevel(idx) {
   bullets      = [];
   boss         = null;
   vigFade      = 12;
+  flickerEvent = null;
+  flickerCooldown = 8;
 
   const sp = level.playerStart;
   if (!player) {
@@ -233,6 +237,34 @@ function update(dt) {
       const crusherDmg = level.updateCrushers(dt, player.x, player.y);
       if (!devInvincible && crusherDmg > 0) Player.takeDamage(player, crusherDmg, 'darkness');
 
+      // Figure event
+      if (!level.isBossLevel && (level.holes || []).length > 0) {
+        flickerCooldown = Math.max(0, flickerCooldown - dt);
+        if (!flickerEvent && flickerCooldown <= 0) {
+          const base = [38, 26, 18, 11][worldIndex] || 25;
+          const jit  = [14, 10,  7,  5][worldIndex] || 10;
+          flickerCooldown = base + Math.random() * jit;
+          flickerEvent = { t: 0, swept: false, hiding: false };
+        }
+        if (flickerEvent) {
+          flickerEvent.t += dt;
+          const nearHole = (level.holes || []).some(h => {
+            const dx = h.x - player.x, dy = h.y - player.y;
+            return dx*dx + dy*dy < 0.45*0.45;
+          });
+          flickerEvent.hiding = nearHole && Input.isDown('KeyH');
+          if (flickerEvent.t >= 5 && !flickerEvent.swept) {
+            flickerEvent.swept = true;
+            if (!flickerEvent.hiding && !devInvincible) {
+              deathCause = 'figure';
+              flickerEvent = null;
+              setState(STATE.DEATH_ANIM);
+            }
+          }
+          if (flickerEvent && flickerEvent.t >= 6.5) flickerEvent = null;
+        }
+      }
+
       // Speed boost pickup
       if (level.collectBoost(player.x, player.y)) player.boostTimer = 4;
 
@@ -343,7 +375,7 @@ function render() {
     case STATE.PLAYING:
     case STATE.BOSS_INTRO: {
       const flash = state === STATE.PLAYING ? player.flashTimer : 0;
-      offscreen = TopDown.render(level, player, level.enemies, bullets, flash, vigFade);
+      offscreen = TopDown.render(level, player, level.enemies, bullets, flash, vigFade, flickerEvent);
       lastGameOffscreen = offscreen;
       ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
       if (player) {

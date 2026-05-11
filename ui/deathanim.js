@@ -11,6 +11,7 @@ const DeathAnim = (() => {
       case 'zombieKing':   drawKingFlick(ctx, t);        break;
       case 'necromancer':  drawNecroSummon(ctx, t);      break;
       case 'darkOverlord': drawOverlordBlackout(ctx, t); break;
+      case 'figure':       drawFigureDeath(ctx, t);      break;
       default:             drawDarkness(ctx, t);         break;
     }
 
@@ -354,6 +355,62 @@ const DeathAnim = (() => {
       };
       eyeGlow(cx - 22, cy);
       eyeGlow(cx + 22, cy);
+    }
+  }
+
+  // ── 8. Figure Death ─────────────────────────────────────────────────────────
+  function drawFigureDeath(ctx, t) {
+    const cx = W / 2, cy = H / 2;
+
+    // Instant darkness
+    ctx.fillStyle = `rgba(0,0,0,${Math.min(0.97, t * 6)})`;
+    ctx.fillRect(0, 0, W, H);
+
+    // Phase 1 (t 0→0.28): figure streaks in from left, ease-in
+    const ARRIVE = 0.28;
+    const sp = Math.min(1, t / ARRIVE);
+    const figX = sp * sp * cx;
+
+    if (t < ARRIVE) {
+      // Speed blur trail
+      ctx.fillStyle = 'rgba(80,100,200,0.10)';
+      ctx.fillRect(0, 0, figX, H);
+    }
+
+    // Figure streak
+    const fx = t < ARRIVE ? figX : cx;
+    ctx.fillStyle = 'rgba(215,228,255,0.92)';
+    ctx.fillRect(fx,     0, 1, H);
+    ctx.fillStyle = 'rgba(120,150,255,0.55)';
+    ctx.fillRect(fx - 1, 0, 1, H);
+    ctx.fillRect(fx + 1, 0, 1, H);
+
+    // Phase 2 (t 0.28→0.72): figure at center, tendrils reach for player
+    if (t >= ARRIVE && t < 0.72) {
+      const grabT = (t - ARRIVE) / 0.44;
+
+      // Player shakes
+      const shake = Math.sin(grabT * 90) * (1 - grabT) * 7;
+      arrow(ctx, cx + shake, cy, 1.0, 0, 1.0);
+
+      // Tendril grows from figure toward player
+      const reach = grabT * cx * 0.85;
+      ctx.strokeStyle = `rgba(180,205,255,${0.55 * (1 - grabT * 0.5)})`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - reach, cy); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Phase 3 (t 0.72→0.80): player wrenched into figure
+    if (t >= 0.72 && t < 0.80) {
+      const pullT = (t - 0.72) / 0.08;
+      const px = cx - pullT * pullT * cx * 0.95;
+      const sc = Math.max(0.04, 1 - pullT * 0.97);
+      arrow(ctx, px, cy, sc, 0, Math.max(0, 1 - pullT * 2));
+      // Figure brightens as it absorbs the player
+      ctx.fillStyle = `rgba(255,255,255,${pullT * 0.35})`;
+      ctx.fillRect(cx - 2, 0, 4, H);
     }
   }
 
