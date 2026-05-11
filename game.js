@@ -50,6 +50,7 @@ let vigFade;
 let deathCause, deathTimer, lastGameOffscreen;
 let flickerEvent = null;
 let flickerCooldown = 8;
+let ventAnim = null;
 
 function startGame() {
   newRun();
@@ -73,6 +74,7 @@ function loadLevel(idx) {
   vigFade      = 12;
   flickerEvent = null;
   flickerCooldown = 8;
+  ventAnim = null;
 
   const sp = level.playerStart;
   if (!player) {
@@ -201,14 +203,17 @@ function update(dt) {
       break;
 
     case STATE.PLAYING: {
-      player.devSpeedMult = devSpeedMult;
-      if (devNoclip) {
-        const origIsWall = level.isWall;
-        level.isWall = () => false;
-        Player.update3D(player, level, dt, bullets);
-        level.isWall = origIsWall;
-      } else {
-        Player.update3D(player, level, dt, bullets);
+      // Freeze player movement while inside vent animation
+      if (!ventAnim) {
+        player.devSpeedMult = devSpeedMult;
+        if (devNoclip) {
+          const origIsWall = level.isWall;
+          level.isWall = () => false;
+          Player.update3D(player, level, dt, bullets);
+          level.isWall = origIsWall;
+        } else {
+          Player.update3D(player, level, dt, bullets);
+        }
       }
       if (devInvincible) player.hp = Player.MAX_HP;
 
@@ -237,7 +242,40 @@ function update(dt) {
       const crusherDmg = level.updateCrushers(dt, player.x, player.y);
       if (!devInvincible && crusherDmg > 0) Player.takeDamage(player, crusherDmg, 'darkness');
 
+      // Vent animation phases
       player.hiding = false;
+      player.hideHole = null;
+      if (ventAnim) {
+        ventAnim.t += dt;
+        player.hiding = true;
+        player.hideHole = ventAnim.hole;
+        if (ventAnim.phase === 'enter' && ventAnim.t >= 1.2) {
+          ventAnim.phase = 'inside'; ventAnim.t = 0;
+        }
+        if (ventAnim.phase === 'inside') {
+          const figDone = !flickerEvent || flickerEvent.t >= 6.0;
+          if (figDone && ventAnim.t >= 0.8) { ventAnim.phase = 'exit'; ventAnim.t = 0; }
+        }
+        if (ventAnim.phase === 'exit' && ventAnim.t >= 1.0) {
+          ventAnim = null;
+        }
+      }
+
+      // Repel enemies from active vent
+      if (player.hiding && player.hideHole) {
+        for (const e of level.enemies) {
+          if (e.dead) continue;
+          const rdx = e.x - player.hideHole.x, rdy = e.y - player.hideHole.y;
+          const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
+          if (rdist > 0 && rdist < 5) {
+            const str = (5 - rdist) / 5 * 2.5;
+            const rnx = e.x + (rdx / rdist) * str * dt;
+            const rny = e.y + (rdy / rdist) * str * dt;
+            if (!level.isWall(rnx, e.y)) e.x = rnx;
+            if (!level.isWall(e.x, rny)) e.y = rny;
+          }
+        }
+      }
 
       // Figure event
       if (!level.isBossLevel && (level.holes || []).length > 0) {
@@ -246,22 +284,27 @@ function update(dt) {
           const base = [14, 10,  7,  4][worldIndex] || 10;
           const jit  = [ 6,  5,  4,  3][worldIndex] ||  5;
           flickerCooldown = base + Math.random() * jit;
-          flickerEvent = { t: 0, swept: false, hiding: false };
+          flickerEvent = { t: 0, swept: false };
         }
         if (flickerEvent) {
           flickerEvent.t += dt;
-          const nearHole = (level.holes || []).some(h => {
-            const dx = h.x - player.x, dy = h.y - player.y;
-            return dx*dx + dy*dy < 0.9*0.9;
-          });
-          if (Input.wasPressed('KeyG') && nearHole) flickerEvent.hideActive = true;
-          flickerEvent.hiding = (flickerEvent.hideActive || false) && nearHole;
-          player.hiding = flickerEvent.hiding;
+          // G to enter nearest vent during warning phase
+          if (!ventAnim && flickerEvent.t < 5) {
+            const nearHole = (level.holes || []).find(h => {
+              const dx = h.x - player.x, dy = h.y - player.y;
+              return dx*dx + dy*dy < 0.9*0.9;
+            });
+            if (Input.wasPressed('KeyG') && nearHole) {
+              ventAnim = { phase: 'enter', t: 0, hole: nearHole };
+            }
+          }
+          flickerEvent.hiding = player.hiding;
           if (flickerEvent.t >= 5 && !flickerEvent.swept) {
             flickerEvent.swept = true;
             if (!flickerEvent.hiding && !devInvincible) {
               deathCause = 'figure';
               flickerEvent = null;
+              ventAnim = null;
               setState(STATE.DEATH_ANIM);
             }
           }
@@ -379,7 +422,7 @@ function render() {
     case STATE.PLAYING:
     case STATE.BOSS_INTRO: {
       const flash = state === STATE.PLAYING ? player.flashTimer : 0;
-      offscreen = TopDown.render(level, player, level.enemies, bullets, flash, vigFade, flickerEvent);
+      offscreen = TopDown.render(level, player, level.enemies, bullets, flash, vigFade, flickerEvent, ventAnim);
       lastGameOffscreen = offscreen;
       ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
       if (player) {

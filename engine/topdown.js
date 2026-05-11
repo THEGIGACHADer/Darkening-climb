@@ -129,7 +129,107 @@ const TopDown = (() => {
     }
   }
 
-  function render(level, player, enemies, bullets, flashAlpha, fadeTiles = 12, flickerEvent = null) {
+  function _drawVent(ctx, ventAnim, flickerEvent, now) {
+    const cx = W / 2, cy = H / 2;
+    const GW = 180, GH = 114;
+
+    function bg() {
+      ctx.fillStyle = '#04040a';
+      ctx.fillRect(0, 0, W, H);
+    }
+    function frame() {
+      ctx.fillStyle = '#232330';
+      ctx.fillRect(cx - GW/2 - 7, cy - GH/2 - 7, GW + 14, GH + 14);
+      ctx.fillStyle = '#141420';
+      ctx.fillRect(cx - GW/2 - 4, cy - GH/2 - 4, GW + 8, GH + 8);
+      ctx.fillStyle = '#080810';
+      ctx.fillRect(cx - GW/2, cy - GH/2, GW, GH);
+    }
+    function slats(fromInside) {
+      const sH = 11, gap = 7;
+      for (let y = cy - GH/2 + 5; y + sH <= cy + GH/2 - 5; y += sH + gap) {
+        if (!fromInside) {
+          ctx.fillStyle = '#4a4a5c';
+          ctx.fillRect(cx - GW/2 + 5, y, GW - 10, sH);
+          ctx.fillStyle = '#6a6a7e';
+          ctx.fillRect(cx - GW/2 + 5, y, GW - 10, 2);
+        } else {
+          const block = Math.floor(now / 75);
+          const h = (Math.imul(block, 2654435761) ^ (block >>> 16)) >>> 0;
+          const prog = flickerEvent && flickerEvent.t < 5 ? flickerEvent.t / 5 : 0;
+          const dark = flickerEvent && flickerEvent.t < 5 && (h / 0xFFFFFFFF) < 0.04 + prog * 0.24;
+          ctx.fillStyle = dark ? '#04040a' : 'rgba(110,130,200,0.15)';
+          ctx.fillRect(cx - GW/2 + 5, y + sH, GW - 10, gap - 1);
+          ctx.fillStyle = '#1c1c28';
+          ctx.fillRect(cx - GW/2 + 5, y, GW - 10, sH);
+        }
+      }
+    }
+    function screws() {
+      [[cx-GW/2+6, cy-GH/2+6],[cx+GW/2-9, cy-GH/2+6],[cx-GW/2+6, cy+GH/2-9],[cx+GW/2-9, cy+GH/2-9]]
+        .forEach(([x, y]) => {
+          ctx.fillStyle = '#505060';
+          ctx.beginPath(); ctx.arc(x+2, y+2, 3.5, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#333340'; ctx.lineWidth = 0.8;
+          ctx.beginPath(); ctx.moveTo(x-1,y+2); ctx.lineTo(x+5,y+2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(x+2,y-1); ctx.lineTo(x+2,y+5); ctx.stroke();
+        });
+    }
+
+    const { phase, t } = ventAnim;
+
+    if (phase === 'enter') {
+      const p = Math.min(1, t / 1.2);
+      if (p < 0.25) {
+        ctx.fillStyle = `rgba(0,0,0,${p / 0.25})`;
+        ctx.fillRect(0, 0, W, H);
+      } else if (p < 0.55) {
+        bg();
+        ctx.globalAlpha = (p - 0.25) / 0.3;
+        frame(); slats(false); screws();
+        ctx.globalAlpha = 1;
+      } else {
+        bg();
+        const scaleY = Math.max(0, 1 - (p - 0.55) / 0.45);
+        if (scaleY > 0.01) {
+          ctx.save();
+          ctx.translate(cx, cy - GH / 2);
+          ctx.scale(1, scaleY);
+          ctx.translate(-cx, -(cy - GH / 2));
+          frame(); slats(false); screws();
+          ctx.restore();
+        }
+      }
+
+    } else if (phase === 'inside') {
+      bg(); frame(); slats(true);
+
+    } else if (phase === 'exit') {
+      const p = Math.min(1, t / 1.0);
+      if (p < 0.5) {
+        bg(); frame(); slats(true);
+        // Grate swings outward from bottom pivot
+        const scaleY = Math.max(0, 1 - p / 0.5);
+        if (scaleY > 0.01) {
+          ctx.save();
+          ctx.translate(cx, cy + GH / 2);
+          ctx.scale(1, scaleY);
+          ctx.translate(-cx, -(cy + GH / 2));
+          ctx.fillStyle = '#1a1a24';
+          ctx.fillRect(cx - GW/2, cy - GH/2, GW, GH);
+          screws();
+          ctx.restore();
+        }
+      } else {
+        const a = 1 - (p - 0.5) / 0.5;
+        ctx.globalAlpha = a;
+        bg(); frame(); slats(true);
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  function render(level, player, enemies, bullets, flashAlpha, fadeTiles = 12, flickerEvent = null, ventAnim = null) {
     _world = level.worldIndex || 0;
     ctx.fillStyle = '#0a0a14';
     ctx.fillRect(0, 0, W, H);
@@ -324,6 +424,9 @@ const TopDown = (() => {
         }
       }
     }
+
+    // Vent enter/exit animation
+    if (ventAnim) _drawVent(ctx, ventAnim, flickerEvent, now);
 
     // Hit flash overlay
     if (flashAlpha > 0) {
