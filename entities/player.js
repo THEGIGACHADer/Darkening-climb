@@ -63,18 +63,11 @@ const Player = (() => {
     if (canMove(level, nx, p.y)) {
       p.x = nx;
     } else {
-      // Front-center hit: facing direction must point into the wall (dot > 0.7)
-      if (boosted && p.hp > 0 && Math.cos(p.angle) * Math.sign(dx) > 0.7) {
-        p.hp = 0; p.lastHitBy = 'kinetic';
-      }
       p.vx = 0;
     }
     if (canMove(level, p.x, ny)) {
       p.y = ny;
     } else {
-      if (boosted && p.hp > 0 && Math.sin(p.angle) * Math.sign(dy) > 0.7) {
-        p.hp = 0; p.lastHitBy = 'kinetic';
-      }
       p.vy = 0;
     }
 

@@ -219,7 +219,7 @@ const Screens = (() => {
     }
   }
 
-  const DEATH_NAMES = ['slime', 'zombie', 'darkness', 'slimeQueen', 'zombieKing', 'necromancer', 'darkOverlord', 'kinetic'];
+  const DEATH_NAMES = ['slime', 'zombie', 'darkness', 'slimeQueen', 'zombieKing', 'necromancer', 'darkOverlord'];
 
   function drawPaused(ctx, devInfo) {
     ctx.fillStyle = 'rgba(0,0,0,0.65)';
