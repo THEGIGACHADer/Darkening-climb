@@ -398,7 +398,7 @@ const TopDown = (() => {
       const dx = level.exitPos.x - player.x;
       const dy = level.exitPos.y - player.y;
       const screenAngle = Math.atan2(dy, dx) - player.angle - Math.PI / 2;
-      const R = 52;
+      const R = 28;
       const ax = W / 2 + Math.cos(screenAngle) * R;
       const ay = H / 2 + Math.sin(screenAngle) * R;
       const pulse = 0.65 + 0.35 * Math.sin(now / 500);
