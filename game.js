@@ -58,6 +58,7 @@ function startGame() {
   levelIndex    = 0;
   worldIndex    = 0;
   levelInWorld  = 0;
+  flickerCooldown = 20;
   loadLevel(levelIndex);
   // Full HP is preserved across levels (no reset per-level)
   player.hp = Player.MAX_HP;
@@ -74,7 +75,6 @@ function loadLevel(idx) {
   boss         = null;
   vigFade      = 12;
   flickerEvent = null;
-  flickerCooldown = 20;
   ventAnim = null;
   teleSpot = null;
 
