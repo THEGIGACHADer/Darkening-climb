@@ -64,8 +64,8 @@ const Level = (() => {
 
       updateCrushers(dt, px, py) {
         for (const c of this.crushers) {
-          const rowAligned = Math.abs(py - c.y) < 0.55;
-          const colAligned = Math.abs(px - c.x) < 0.55;
+          const rowAligned = Math.abs(py - c.y) < 0.8;
+          const colAligned = Math.abs(px - c.x) < 0.8;
           let vx = 0, vy = 0;
           if (rowAligned && this._axisLOS(c.x, c.y, px, c.y)) {
             vx = px - c.x;

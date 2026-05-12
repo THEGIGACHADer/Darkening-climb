@@ -335,16 +335,16 @@ function _placeCrushers(g, rng, worldIndex, levelInWorld) {
   if (levelInWorld === 4) return [];
   const count = 1 + (levelInWorld >= 2 ? 1 : 0);
 
-  // Find wall cells at the edge of structures (have at least one floor neighbor),
-  // away from the map edge and the player start zone.
+  // Find floor cells that border at least one wall — crusher starts here looking
+  // like a wall extension, but LoS is clear since the cell itself is floor.
   const cells = [];
   for (let r = 2; r < _IH - 2; r++) {
     for (let c = 2; c < _IW - 2; c++) {
-      if (g[r][c] !== '#') continue;
+      if (g[r][c] !== '.') continue;
       if (r < 8 && c < 8) continue;
-      const adj = (g[r-1]?.[c] === '.') || (g[r+1]?.[c] === '.') ||
-                  (g[r]?.[c-1] === '.') || (g[r]?.[c+1] === '.');
-      if (adj) cells.push([r, c]);
+      const adjWall = (g[r-1]?.[c] === '#') || (g[r+1]?.[c] === '#') ||
+                      (g[r]?.[c-1] === '#') || (g[r]?.[c+1] === '#');
+      if (adjWall) cells.push([r, c]);
     }
   }
 
@@ -356,7 +356,6 @@ function _placeCrushers(g, rng, worldIndex, levelInWorld) {
   const crushers = [];
   for (let i = 0; i < count && i < cells.length; i++) {
     const [r, c] = cells[i];
-    g[r][c] = '.';  // clear so the tile becomes walkable once crusher moves away
     crushers.push({ x: c + 1.5, y: r + 1.5, speed: 3.2 + worldIndex * 0.7 });
   }
   return crushers;
