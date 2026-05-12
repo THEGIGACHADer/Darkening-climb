@@ -339,7 +339,7 @@ function _placeCrushers(g, rng, worldIndex, levelInWorld) {
   for (let i = 0; i < count && i < cells.length; i++) {
     const [r, c] = cells[i];
     // +1 for border offset, +0.5 to center within tile
-    crushers.push({ x: c + 1.5, y: r + 1.5, speed: 5 + worldIndex * 1.5 });
+    crushers.push({ x: c + 1.5, y: r + 1.5, speed: 1.8 + worldIndex * 0.35 });
   }
   return crushers;
 }

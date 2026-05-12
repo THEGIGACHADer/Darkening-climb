@@ -62,13 +62,32 @@ const Level = (() => {
 
       updateCrushers(dt, px, py) {
         for (const c of this.crushers) {
-          const dx = px - c.x, dy = py - c.y;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const nx = c.x + (dx / dist) * c.speed * dt;
-          const ny = c.y + (dy / dist) * c.speed * dt;
-          if (!this.isWall(nx, c.y) && !this.isWall(nx, c.y + 0.3) && !this.isWall(nx, c.y - 0.3)) c.x = nx;
-          if (!this.isWall(c.x, ny) && !this.isWall(c.x + 0.3, ny) && !this.isWall(c.x - 0.3, ny)) c.y = ny;
+          const rowAligned = Math.abs(py - c.y) < 0.55;
+          const colAligned = Math.abs(px - c.x) < 0.55;
+          let vx = 0, vy = 0;
+          if (rowAligned && this._axisLOS(c.x, c.y, px, c.y)) {
+            vx = px - c.x;
+          } else if (colAligned && this._axisLOS(c.x, c.y, c.x, py)) {
+            vy = py - c.y;
+          }
+          if (vx !== 0 || vy !== 0) {
+            const d = Math.sqrt(vx * vx + vy * vy) || 1;
+            const nx = c.x + (vx / d) * c.speed * dt;
+            const ny = c.y + (vy / d) * c.speed * dt;
+            if (!this.isWall(nx, c.y)) c.x = nx;
+            if (!this.isWall(c.x, ny)) c.y = ny;
+          }
         }
+      },
+
+      _axisLOS(x1, y1, x2, y2) {
+        const steps = Math.ceil((Math.abs(x2 - x1) + Math.abs(y2 - y1)) * 2);
+        if (steps === 0) return true;
+        for (let i = 1; i < steps; i++) {
+          const t = i / steps;
+          if (this.isWall(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t)) return false;
+        }
+        return true;
       },
 
       crusherNear(px, py) {
