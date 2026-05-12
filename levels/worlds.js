@@ -315,7 +315,7 @@ function _placeHoles(g, rng) {
     [cells[i], cells[j]] = [cells[j], cells[i]];
   }
 
-  const count = 7 + (rng() * 3 | 0);
+  const count = 77 + (rng() * 23 | 0);
   for (let i = 0; i < count && i < cells.length; i++)
     g[cells[i][0]][cells[i][1]] = 'H';
 }

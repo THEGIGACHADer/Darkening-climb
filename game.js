@@ -75,7 +75,7 @@ function loadLevel(idx) {
   levelInWorld = def.levelInWorld;
   bullets      = [];
   boss         = null;
-  vigFade      = 12;
+  vigFade      = 20;
   flickerEvent = null;
   ventAnim = null;
   teleSpot = null;
@@ -229,12 +229,12 @@ function update(dt) {
           Slime.update(e, dt, player, level);
           if (e.dead) {
             const splits = Slime.splitSpawns(e);
-            if (splits.length === 0) { vigFade = Math.min(10, vigFade + 0.5); Audio.playEnemyDeath(); }
+            if (splits.length === 0) { vigFade = Math.min(20, vigFade + 0.5); Audio.playEnemyDeath(); }
             newEnemies.push(...splits);
           }
         } else if (e.type === 'zombie') {
           Zombie.update(e, dt, player, level);
-          if (e.dead) { vigFade = Math.min(10, vigFade + 2); Audio.playEnemyDeath(); }
+          if (e.dead) { vigFade = Math.min(20, vigFade + 2); Audio.playEnemyDeath(); }
         }
       }
       level.enemies = level.enemies.filter(e => !e.dead).concat(newEnemies);
@@ -337,7 +337,7 @@ function update(dt) {
           flickerEvent.hiding = player.hiding;
           if (flickerEvent.t >= 5 && !flickerEvent.swept) {
             flickerEvent.swept = true;
-            vigFade = Math.min(12, vigFade + 5);
+            vigFade = Math.min(20, vigFade + 5);
             if (!flickerEvent.hiding && !devInvincible) {
               deathCause = 'figure';
               flickerEvent = null;
