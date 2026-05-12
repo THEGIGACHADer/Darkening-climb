@@ -6,6 +6,7 @@ const Level = (() => {
     const boostPositions = [];
     const holePositions = [];
     let playerStart = def.playerStart;
+    let exitPos = null;
 
     for (let row = 0; row < def.map.length; row++) {
       const line = def.map[row];
@@ -16,7 +17,7 @@ const Level = (() => {
           case '#': gridRow.push(1); break;
           case 's': gridRow.push(0); enemySpawns.push({ type: 'slime', x: col + 0.5, y: row + 0.5 }); break;
           case 'z': gridRow.push(0); enemySpawns.push({ type: 'zombie', x: col + 0.5, y: row + 0.5 }); break;
-          case 'e': gridRow.push(8); break;
+          case 'e': gridRow.push(8); exitPos = { x: col + 0.5, y: row + 0.5 }; break;
           case 'B': gridRow.push(0); boostPositions.push({ x: col + 0.5, y: row + 0.5 }); break;
           case 'H': gridRow.push(0); holePositions.push({ x: col + 0.5, y: row + 0.5 }); break;
           default:  gridRow.push(0);
@@ -25,7 +26,7 @@ const Level = (() => {
       grid.push(gridRow);
     }
 
-    return { grid, enemySpawns, boostPositions, holePositions, playerStart, worldIndex: def.worldIndex, levelInWorld: def.levelInWorld, crushers: def.crushers || [] };
+    return { grid, enemySpawns, boostPositions, holePositions, exitPos, playerStart, worldIndex: def.worldIndex, levelInWorld: def.levelInWorld, crushers: def.crushers || [] };
   }
 
   function build(def, worldSpeed) {
@@ -48,6 +49,7 @@ const Level = (() => {
       boosts: data.boostPositions.slice(),
       holes: data.holePositions.slice(),
       crushers: data.crushers.map(c => Object.assign({}, c)),
+      exitPos: data.exitPos,
       playerStart: data.playerStart,
       worldIndex: data.worldIndex,
       levelInWorld: data.levelInWorld,

@@ -393,6 +393,32 @@ const TopDown = (() => {
       ctx.fillRect(0, 0, W, H);
     }
 
+    // Exit direction arrow
+    if (level.exitPos) {
+      const dx = level.exitPos.x - player.x;
+      const dy = level.exitPos.y - player.y;
+      const screenAngle = Math.atan2(dy, dx) - player.angle - Math.PI / 2;
+      const R = 52;
+      const ax = W / 2 + Math.cos(screenAngle) * R;
+      const ay = H / 2 + Math.sin(screenAngle) * R;
+      const pulse = 0.65 + 0.35 * Math.sin(now / 500);
+      ctx.save();
+      ctx.translate(ax, ay);
+      ctx.rotate(screenAngle + Math.PI / 2);
+      ctx.fillStyle = `rgba(0,220,110,${pulse})`;
+      ctx.strokeStyle = `rgba(0,80,40,${pulse})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, -7);
+      ctx.lineTo(-4, 4);
+      ctx.lineTo(0, 1);
+      ctx.lineTo(4, 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
     return offscreen;
   }
 
