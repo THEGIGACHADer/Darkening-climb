@@ -298,8 +298,8 @@ function update(dt) {
       if (!level.isBossLevel && (level.holes || []).length > 0) {
         flickerCooldown = Math.max(0, flickerCooldown - dt);
         if (!flickerEvent && flickerCooldown <= 0) {
-          const base = [40, 30, 22, 14][worldIndex] || 30;
-          const jit  = [18, 12,  9,  6][worldIndex] || 12;
+          const base = [27, 23, 18, 14][worldIndex] || 22;
+          const jit  = [ 8,  5,  4,  3][worldIndex] ||  5;
           flickerCooldown = base + Math.random() * jit;
           flickerEvent = { t: 0, swept: false };
         }
