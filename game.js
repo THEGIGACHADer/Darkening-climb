@@ -52,6 +52,7 @@ let flickerEvent = null;
 let flickerCooldown = 8;
 let ventAnim = null;
 let teleSpot = null;
+let teleCooldown = 0;
 
 function startGame() {
   newRun();
@@ -279,14 +280,17 @@ function update(dt) {
         }
       }
 
-      // Teleport spot — E sets it, E again teleports
+      teleCooldown = Math.max(0, teleCooldown - dt);
+
+      // Teleport spot — E sets it (free), E again teleports (20s cooldown after)
       if (Input.wasPressed('KeyE')) {
-        if (!teleSpot) {
+        if (!teleSpot && teleCooldown <= 0) {
           teleSpot = { x: player.x, y: player.y, angle: player.angle };
-        } else {
+        } else if (teleSpot) {
           player.x = teleSpot.x; player.y = teleSpot.y; player.angle = teleSpot.angle;
           player.vx = player.vy = 0;
           teleSpot = null;
+          teleCooldown = 20;
         }
       }
 
@@ -445,7 +449,7 @@ function render() {
         const scaleY = canvas.height / INTERNAL_H;
         ctx.save();
         ctx.scale(scaleX, scaleY);
-        HUD.draw(ctx, player, worldIndex, levelInWorld, '3D');
+        HUD.draw(ctx, player, worldIndex, levelInWorld, '3D', teleCooldown);
         ctx.restore();
       }
       if (state === STATE.BOSS_INTRO) {

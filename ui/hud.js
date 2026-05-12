@@ -6,7 +6,7 @@ const HUD = (() => {
   const BAR_W = 88, BAR_H = 9;
   const BAR_X = 4, BAR_Y = H - 14;
 
-  function draw(ctx, player, worldIndex, levelInWorld, mode) {
+  function draw(ctx, player, worldIndex, levelInWorld, mode, teleCooldown = 0) {
     const accent = WORLD_ACCENTS[worldIndex] || '#22cc44';
     const hpPct  = Math.max(0, player.hp / Player.MAX_HP);
 
@@ -73,6 +73,21 @@ const HUD = (() => {
     ctx.font = '5px Arial, sans-serif';
     const lw = ctx.measureText(label).width;
     ctx.fillText(label, (W - lw) / 2, H - 3);
+
+    // ── Teleport cooldown ───────────────────────────────────────────────────
+    if (teleCooldown > 0) {
+      const cW = 50, cH = 4, cX = W - cW - 4, cY = 4;
+      ctx.fillStyle = '#111';
+      ctx.fillRect(cX - 1, cY - 1, cW + 2, cH + 2);
+      ctx.fillStyle = 'rgba(180,100,255,0.75)';
+      ctx.fillRect(cX, cY, (cW * teleCooldown / 20) | 0, cH);
+      ctx.strokeStyle = 'rgba(180,100,255,0.8)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cX - 0.5, cY - 0.5, cW + 1, cH + 1);
+      ctx.fillStyle = '#cc88ff';
+      ctx.font = 'bold 5px Arial, sans-serif';
+      ctx.fillText(`TELE ${Math.ceil(teleCooldown)}s`, cX + 1, cY + cH + 6);
+    }
 
     // ── Speed boost bar ─────────────────────────────────────────────────────
     if (player.boostTimer > 0) {
