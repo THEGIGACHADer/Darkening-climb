@@ -53,6 +53,7 @@ let flickerCooldown = 8;
 let ventAnim = null;
 let teleSpot = null;
 let teleCooldown = 0;
+let grabState = null;
 
 function startGame() {
   newRun();
@@ -78,6 +79,7 @@ function loadLevel(idx) {
   flickerEvent = null;
   ventAnim = null;
   teleSpot = null;
+  grabState = null;
 
   const sp = level.playerStart;
   if (!player) {
@@ -206,8 +208,8 @@ function update(dt) {
       break;
 
     case STATE.PLAYING: {
-      // Freeze player movement while inside vent animation
-      if (!ventAnim) {
+      // Freeze player movement while inside vent animation or grabbed
+      if (!ventAnim && !grabState) {
         player.devSpeedMult = devSpeedMult;
         if (devNoclip) {
           const origIsWall = level.isWall;
@@ -242,8 +244,25 @@ function update(dt) {
       bullets = bullets.filter(b => !b.dead);
 
       // Moving crusher walls
-      const crusherDmg = level.updateCrushers(dt, player.x, player.y);
-      if (!devInvincible && crusherDmg > 0) Player.takeDamage(player, crusherDmg, 'darkness');
+      if (!grabState) level.updateCrushers(dt, player.x, player.y);
+
+      // Grab detection and Space-spam escape
+      if (!grabState) {
+        const grabbed = !devInvincible && level.crusherNear(player.x, player.y);
+        if (grabbed) grabState = { crusher: grabbed, presses: 0 };
+      } else {
+        if (Input.wasPressed('Space')) {
+          grabState.presses++;
+          if (grabState.presses >= 6) {
+            const dx = player.x - grabState.crusher.x;
+            const dy = player.y - grabState.crusher.y;
+            const d = Math.sqrt(dx * dx + dy * dy) || 1;
+            player.vx = (dx / d) * 8;
+            player.vy = (dy / d) * 8;
+            grabState = null;
+          }
+        }
+      }
 
       // Vent animation phases
       player.hiding = false;
@@ -450,6 +469,22 @@ function render() {
         ctx.save();
         ctx.scale(scaleX, scaleY);
         HUD.draw(ctx, player, worldIndex, levelInWorld, '3D', teleCooldown);
+        if (grabState) {
+          const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 80);
+          const gvig = ctx.createRadialGradient(INTERNAL_W/2, INTERNAL_H/2, 0, INTERNAL_W/2, INTERNAL_H/2, INTERNAL_H * 0.7);
+          gvig.addColorStop(0, 'rgba(200,0,0,0)');
+          gvig.addColorStop(1, `rgba(200,0,0,${0.4 + pulse * 0.2})`);
+          ctx.fillStyle = gvig;
+          ctx.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
+          const bW = 80, bH = 6, bX = (INTERNAL_W - 80) / 2, bY = INTERNAL_H / 2 - 3;
+          ctx.fillStyle = '#330000';
+          ctx.fillRect(bX, bY, bW, bH);
+          ctx.fillStyle = `rgba(255,60,60,${0.8 + pulse * 0.2})`;
+          ctx.fillRect(bX, bY, (bW * grabState.presses / 6) | 0, bH);
+          ctx.strokeStyle = '#ff4444';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(bX - 0.5, bY - 0.5, bW + 1, bH + 1);
+        }
         ctx.restore();
       }
       if (state === STATE.BOSS_INTRO) {

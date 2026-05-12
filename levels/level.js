@@ -57,33 +57,26 @@ const Level = (() => {
         const col = Math.floor(x), row = Math.floor(y);
         if (row < 0 || row >= this.grid.length) return true;
         if (col < 0 || col >= this.grid[row].length) return true;
-        if (this.grid[row][col] === 1) return true;
-        for (const c of this.crushers) {
-          const p0 = Math.floor(c.pos), p1 = p0 + c.length - 1;
-          if (c.axis === 'v') { if (col === c.fixed && row >= p0 && row <= p1) return true; }
-          else                { if (row === c.fixed && col >= p0 && col <= p1) return true; }
-        }
-        return false;
+        return this.grid[row][col] === 1;
       },
 
       updateCrushers(dt, px, py) {
-        let dmg = 0;
         for (const c of this.crushers) {
-          c.pos += c.dir * c.speed * dt;
-          if (c.pos <= c.min) { c.pos = c.min; c.dir = 1; }
-          else if (c.pos >= c.max) { c.pos = c.max; c.dir = -1; }
-
-          c.dmgCooldown = Math.max(0, c.dmgCooldown - dt);
-          if (c.dmgCooldown <= 0) {
-            const perp = c.axis === 'v' ? Math.abs(px - (c.fixed + 0.5)) : Math.abs(py - (c.fixed + 0.5));
-            const par  = c.axis === 'v' ? py : px;
-            if (perp < 0.72 && par >= c.pos - 0.4 && par <= c.pos + c.length + 0.4) {
-              c.dmgCooldown = 0.75;
-              dmg += 25;
-            }
-          }
+          const dx = px - c.x, dy = py - c.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const nx = c.x + (dx / dist) * c.speed * dt;
+          const ny = c.y + (dy / dist) * c.speed * dt;
+          if (!this.isWall(nx, c.y) && !this.isWall(nx, c.y + 0.3) && !this.isWall(nx, c.y - 0.3)) c.x = nx;
+          if (!this.isWall(c.x, ny) && !this.isWall(c.x + 0.3, ny) && !this.isWall(c.x - 0.3, ny)) c.y = ny;
         }
-        return dmg;
+      },
+
+      crusherNear(px, py) {
+        for (const c of this.crushers) {
+          const dx = c.x - px, dy = c.y - py;
+          if (dx * dx + dy * dy < 0.55 * 0.55) return c;
+        }
+        return null;
       },
 
       // Used by raycaster: walls AND exits are visually solid

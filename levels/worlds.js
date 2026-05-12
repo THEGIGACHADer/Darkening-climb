@@ -324,48 +324,22 @@ function _placeHoles(g, rng) {
 function _placeCrushers(g, rng, worldIndex, levelInWorld) {
   if (levelInWorld === 4) return [];
   const count = 1 + (levelInWorld >= 2 ? 1 : 0);
+  const cells = [];
+  for (let r = 5; r < _IH - 5; r++)
+    for (let c = 5; c < _IW - 5; c++)
+      if (g[r][c] === '.' && !(r < 8 && c < 8))
+        cells.push([r, c]);
+
+  for (let i = cells.length - 1; i > 0; i--) {
+    const j = rng() * (i + 1) | 0;
+    [cells[i], cells[j]] = [cells[j], cells[i]];
+  }
+
   const crushers = [];
-  const used = new Set();
-  let attempts = 0;
-
-  while (crushers.length < count && attempts < 80) {
-    attempts++;
-    const axis = rng() < 0.5 ? 'v' : 'h';
-    const fixed = 3 + (rng() * (axis === 'v' ? _IW - 8 : _IH - 8) | 0);
-    const key = axis + fixed;
-    if (used.has(key)) continue;
-
-    // Find longest open run along this col/row
-    let best = { start: -1, len: 0 }, cur = { start: -1, len: 0 };
-    const limit = axis === 'v' ? _IH : _IW;
-    for (let i = 0; i < limit; i++) {
-      const open = axis === 'v' ? g[i][fixed] !== '#' : g[fixed][i] !== '#';
-      if (open) {
-        if (cur.start === -1) cur.start = i;
-        cur.len++;
-        if (cur.len > best.len) best = { start: cur.start, len: cur.len };
-      } else { cur = { start: -1, len: 0 }; }
-    }
-
-    if (best.len < 6) continue;
-
-    // +1 offsets to match full-map tile coords (border adds 1 row/col)
-    // min clamped to 4 so crushers never reach the player start zone (rows/cols 1-3)
-    const min = Math.max(best.start + 1, 4);
-    const max = best.start + best.len - 2 + 1;
-    if (max <= min + 1) continue;
-
-    used.add(key);
-    crushers.push({
-      axis,
-      fixed: fixed + 1,
-      length: 2,
-      min, max,
-      pos: min + rng() * (max - min),
-      dir: rng() < 0.5 ? 1 : -1,
-      speed: 3.0 + worldIndex * 0.65,
-      dmgCooldown: 0,
-    });
+  for (let i = 0; i < count && i < cells.length; i++) {
+    const [r, c] = cells[i];
+    // +1 for border offset, +0.5 to center within tile
+    crushers.push({ x: c + 1.5, y: r + 1.5, speed: 5 + worldIndex * 1.5 });
   }
   return crushers;
 }

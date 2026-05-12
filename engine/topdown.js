@@ -201,7 +201,6 @@ const TopDown = (() => {
       ctx.beginPath(); ctx.arc(h.x * TS, h.y * TS, 2.5, 0, Math.PI * 2); ctx.fill();
     }
 
-    // Moving crusher walls
     const now = Date.now();
 
     // Hole pulse glow during flicker warning
@@ -213,25 +212,22 @@ const TopDown = (() => {
         ctx.beginPath(); ctx.arc(h.x * TS, h.y * TS, TS * 0.7, 0, Math.PI * 2); ctx.fill();
       }
     }
-    const cpulse = 0.5 + 0.5 * Math.sin(now / 280);
+
+    // Moving crusher walls — look like regular walls, barely-tinted red
     for (const c of (level.crushers || [])) {
-      for (let i = 0; i < c.length; i++) {
-        const col = c.axis === 'v' ? c.fixed : Math.floor(c.pos) + i;
-        const row = c.axis === 'v' ? Math.floor(c.pos) + i : c.fixed;
-        const cx = col * TS, cy = row * TS;
-        ctx.fillStyle = '#1a0000';
-        ctx.fillRect(cx + 2, cy + 2, TS, TS);
-        ctx.fillStyle = '#7a2828';
-        ctx.fillRect(cx, cy, TS, TS);
-        ctx.fillStyle = `rgba(255,50,0,${0.22 + cpulse * 0.22})`;
-        ctx.fillRect(cx + 2, cy + 2, TS - 4, TS - 4);
-        ctx.fillStyle = '#b05050';
-        ctx.fillRect(cx, cy, TS, 2);
-        ctx.fillRect(cx, cy, 2, TS);
-        ctx.fillStyle = '#4a1010';
-        ctx.fillRect(cx, cy + TS - 2, TS, 2);
-        ctx.fillRect(cx + TS - 2, cy, 2, TS);
-      }
+      const cx = (c.x - 0.5) * TS, cy = (c.y - 0.5) * TS;
+      ctx.fillStyle = '#08080f';
+      ctx.fillRect(cx + 2, cy + 2, TS, TS);
+      ctx.fillStyle = '#7a8898';
+      ctx.fillRect(cx, cy, TS, TS);
+      ctx.fillStyle = '#b0c0d0';
+      ctx.fillRect(cx, cy, TS, 2);
+      ctx.fillRect(cx, cy, 2, TS);
+      ctx.fillStyle = '#3a4858';
+      ctx.fillRect(cx, cy + TS - 2, TS, 2);
+      ctx.fillRect(cx + TS - 2, cy, 2, TS);
+      ctx.fillStyle = 'rgba(200,30,0,0.10)';
+      ctx.fillRect(cx, cy, TS, TS);
     }
 
     // Speed boost pickups (lightning bolt)
