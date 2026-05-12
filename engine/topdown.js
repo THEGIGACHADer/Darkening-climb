@@ -331,16 +331,27 @@ const TopDown = (() => {
           ctx.fillRect(0, 0, W, H);
         }
       } else if (fe.t < 6.5) {
-        // Storm phase — near-blackout + razor-thin figure
-        ctx.fillStyle = 'rgba(0,0,0,0.94)';
+        // Storm phase — partial blackout so room is faintly visible
+        ctx.fillStyle = 'rgba(0,0,0,0.78)';
         ctx.fillRect(0, 0, W, H);
         const sp = Math.min(1, (fe.t - 5));
         if (sp < 1) {
           const sx = sp * sp * (W + 12); // ease-in sweep
+          // Travelling light — wide soft glow around the figure
+          const glow = ctx.createLinearGradient(sx - 80, 0, sx + 80, 0);
+          glow.addColorStop(0,   'rgba(160,185,255,0)');
+          glow.addColorStop(0.4, 'rgba(160,185,255,0.10)');
+          glow.addColorStop(0.5, 'rgba(200,220,255,0.22)');
+          glow.addColorStop(0.6, 'rgba(160,185,255,0.10)');
+          glow.addColorStop(1,   'rgba(160,185,255,0)');
+          ctx.fillStyle = glow;
+          ctx.fillRect(sx - 80, 0, 160, H);
+          // Shadow trail
           ctx.fillStyle = 'rgba(18,22,48,0.75)';
-          ctx.fillRect(sx - 14, 0, 12, H);  // shadow trail
+          ctx.fillRect(sx - 14, 0, 12, H);
+          // Core — the figure
           ctx.fillStyle = 'rgba(210,225,255,0.92)';
-          ctx.fillRect(sx,     0, 1, H);    // core — the figure
+          ctx.fillRect(sx,     0, 1, H);
           ctx.fillStyle = 'rgba(140,170,255,0.50)';
           ctx.fillRect(sx - 1, 0, 1, H);
           ctx.fillRect(sx + 1, 0, 1, H);
