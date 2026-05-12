@@ -275,8 +275,11 @@ function update(dt) {
           ventAnim.phase = 'inside'; ventAnim.t = 0;
         }
         if (ventAnim.phase === 'inside') {
-          const figDone = !flickerEvent || flickerEvent.t >= 6.0;
-          if (figDone && ventAnim.t >= 0.3) { ventAnim.phase = 'exit'; ventAnim.t = 0; }
+          const figSweepDone = flickerEvent && flickerEvent.t >= 6.0;
+          const manualExit = !flickerEvent && Input.wasPressed('KeyG');
+          if (ventAnim.t >= 0.3 && (figSweepDone || manualExit)) {
+            ventAnim.phase = 'exit'; ventAnim.t = 0;
+          }
         }
         if (ventAnim.phase === 'exit' && ventAnim.t >= 0.35) {
           ventAnim = null;
@@ -322,18 +325,19 @@ function update(dt) {
           flickerCooldown = base + Math.random() * jit;
           flickerEvent = { t: 0, swept: false };
         }
+      // G to enter nearest vent (any time)
+      if (!ventAnim) {
+        const nearHole = (level.holes || []).find(h => {
+          const dx = h.x - player.x, dy = h.y - player.y;
+          return dx*dx + dy*dy < 0.9*0.9;
+        });
+        if (Input.wasPressed('KeyG') && nearHole) {
+          ventAnim = { phase: 'enter', t: 0, hole: nearHole };
+        }
+      }
+
         if (flickerEvent) {
           flickerEvent.t += dt;
-          // G to enter nearest vent during warning phase
-          if (!ventAnim && flickerEvent.t < 5) {
-            const nearHole = (level.holes || []).find(h => {
-              const dx = h.x - player.x, dy = h.y - player.y;
-              return dx*dx + dy*dy < 0.9*0.9;
-            });
-            if (Input.wasPressed('KeyG') && nearHole) {
-              ventAnim = { phase: 'enter', t: 0, hole: nearHole };
-            }
-          }
           flickerEvent.hiding = player.hiding;
           if (flickerEvent.t >= 5 && !flickerEvent.swept) {
             flickerEvent.swept = true;

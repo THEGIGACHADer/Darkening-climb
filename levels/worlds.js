@@ -24,7 +24,8 @@ function _blank() {
 }
 
 function _set(g, c, r, ch) {
-  if (r >= 0 && r < _IH && c >= 0 && c < _IW) g[r][c] = ch;
+  const rows = g.length, cols = g[0] ? g[0].length : 0;
+  if (r >= 0 && r < rows && c >= 0 && c < cols) g[r][c] = ch;
 }
 
 function _solidRect(g, c, r, w, h) {
@@ -302,22 +303,29 @@ const _LAYOUTS = [
 ];
 
 // ─── Hideout hole placement ──────────────────────────────────────────────────
+// Divide map into a regular grid of zones; place one vent per zone.
 function _placeHoles(g, rng) {
-  const cells = [];
-  for (let r = 0; r < _IH; r++)
-    for (let c = 0; c < _IW; c++)
-      if (g[r][c] === '.' && !(r < 3 && c < 3) && !(r >= _IH - 3 && c >= _IW - 3))
-        cells.push([r, c]);
+  const ZX = 8, ZY = 6;  // 48 zones → up to 46 vents (skip start + exit corners)
+  const zW = _IW / ZX, zH = _IH / ZY;
 
-  // Fisher-Yates shuffle
-  for (let i = cells.length - 1; i > 0; i--) {
-    const j = rng() * (i + 1) | 0;
-    [cells[i], cells[j]] = [cells[j], cells[i]];
+  for (let zy = 0; zy < ZY; zy++) {
+    for (let zx = 0; zx < ZX; zx++) {
+      if (zy === 0 && zx === 0) continue;               // player start corner
+      if (zy === ZY - 1 && zx === ZX - 1) continue;    // exit corner
+
+      const r0 = Math.floor(zy * zH), r1 = Math.floor((zy + 1) * zH);
+      const c0 = Math.floor(zx * zW), c1 = Math.floor((zx + 1) * zW);
+
+      const cells = [];
+      for (let r = r0; r < r1 && r < _IH; r++)
+        for (let c = c0; c < c1 && c < _IW; c++)
+          if (g[r][c] === '.') cells.push([r, c]);
+
+      if (cells.length === 0) continue;
+      const [r, c] = cells[rng() * cells.length | 0];
+      g[r][c] = 'H';
+    }
   }
-
-  const count = 38 + (rng() * 12 | 0);
-  for (let i = 0; i < count && i < cells.length; i++)
-    g[cells[i][0]][cells[i][1]] = 'H';
 }
 
 // ─── Crusher placement ───────────────────────────────────────────────────────
