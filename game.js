@@ -301,6 +301,7 @@ function update(dt) {
           flickerEvent.hiding = player.hiding;
           if (flickerEvent.t >= 5 && !flickerEvent.swept) {
             flickerEvent.swept = true;
+            vigFade = Math.min(12, vigFade + 5);
             if (!flickerEvent.hiding && !devInvincible) {
               deathCause = 'figure';
               flickerEvent = null;
