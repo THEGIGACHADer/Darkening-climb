@@ -249,14 +249,14 @@ function update(dt) {
         ventAnim.t += dt;
         player.hiding = true;
         player.hideHole = ventAnim.hole;
-        if (ventAnim.phase === 'enter' && ventAnim.t >= 1.2) {
+        if (ventAnim.phase === 'enter' && ventAnim.t >= 0.35) {
           ventAnim.phase = 'inside'; ventAnim.t = 0;
         }
         if (ventAnim.phase === 'inside') {
           const figDone = !flickerEvent || flickerEvent.t >= 6.0;
-          if (figDone && ventAnim.t >= 0.8) { ventAnim.phase = 'exit'; ventAnim.t = 0; }
+          if (figDone && ventAnim.t >= 0.3) { ventAnim.phase = 'exit'; ventAnim.t = 0; }
         }
-        if (ventAnim.phase === 'exit' && ventAnim.t >= 1.0) {
+        if (ventAnim.phase === 'exit' && ventAnim.t >= 0.35) {
           ventAnim = null;
         }
       }
