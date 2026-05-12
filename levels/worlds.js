@@ -3,7 +3,7 @@
 
 const WORLD_SPEEDS = [1.0, 1.2, 1.4, 1.8];
 
-const _IW = 80, _IH = 60;
+const _IW = 40, _IH = 30;
 const _LW = 24, _LH = 18; // layout template size (obstacles placed in sub-grids)
 
 // ─── Seeded LCG RNG ──────────────────────────────────────────────────────────
@@ -315,7 +315,7 @@ function _placeHoles(g, rng) {
     [cells[i], cells[j]] = [cells[j], cells[i]];
   }
 
-  const count = 77 + (rng() * 23 | 0);
+  const count = 38 + (rng() * 12 | 0);
   for (let i = 0; i < count && i < cells.length; i++)
     g[cells[i][0]][cells[i][1]] = 'H';
 }
