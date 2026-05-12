@@ -213,7 +213,7 @@ const TopDown = (() => {
       }
     }
 
-    // Moving crusher walls — look like regular walls, barely-tinted red
+    // Moving crusher walls — identical to regular walls
     for (const c of (level.crushers || [])) {
       const cx = (c.x - 0.5) * TS, cy = (c.y - 0.5) * TS;
       ctx.fillStyle = '#08080f';
@@ -226,8 +226,6 @@ const TopDown = (() => {
       ctx.fillStyle = '#3a4858';
       ctx.fillRect(cx, cy + TS - 2, TS, 2);
       ctx.fillRect(cx + TS - 2, cy, 2, TS);
-      ctx.fillStyle = 'rgba(200,30,0,0.10)';
-      ctx.fillRect(cx, cy, TS, TS);
     }
 
     // Speed boost pickups (lightning bolt)

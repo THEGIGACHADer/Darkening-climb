@@ -275,6 +275,17 @@ function update(dt) {
           ventAnim.phase = 'inside'; ventAnim.t = 0;
         }
         if (ventAnim.phase === 'inside') {
+          // R — travel to next vent in the network
+          if (Input.wasPressed('KeyR')) {
+            const holes = level.holes || [];
+            const idx = holes.indexOf(ventAnim.hole);
+            const next = holes[(idx + 1) % holes.length];
+            if (next && next !== ventAnim.hole) {
+              ventAnim.hole = next;
+              player.x = next.x;
+              player.y = next.y;
+            }
+          }
           const figSweepDone = flickerEvent && flickerEvent.t >= 6.0;
           const manualExit = !flickerEvent && Input.wasPressed('KeyG');
           if (ventAnim.t >= 0.3 && (figSweepDone || manualExit)) {

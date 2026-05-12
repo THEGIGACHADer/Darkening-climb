@@ -310,8 +310,8 @@ function _placeHoles(g, rng) {
 
   for (let zy = 0; zy < ZY; zy++) {
     for (let zx = 0; zx < ZX; zx++) {
-      if (zy === 0 && zx === 0) continue;               // player start corner
-      if (zy === ZY - 1 && zx === ZX - 1) continue;    // exit corner
+      if (zy === 0 && zx === 0) continue;                    // player start corner
+      if (zy >= ZY - 2 && zx >= ZX - 2) continue;          // keep vents away from exit
 
       const r0 = Math.floor(zy * zH), r1 = Math.floor((zy + 1) * zH);
       const c0 = Math.floor(zx * zW), c1 = Math.floor((zx + 1) * zW);
@@ -347,7 +347,7 @@ function _placeCrushers(g, rng, worldIndex, levelInWorld) {
   for (let i = 0; i < count && i < cells.length; i++) {
     const [r, c] = cells[i];
     // +1 for border offset, +0.5 to center within tile
-    crushers.push({ x: c + 1.5, y: r + 1.5, speed: 1.8 + worldIndex * 0.35 });
+    crushers.push({ x: c + 1.5, y: r + 1.5, speed: 3.2 + worldIndex * 0.7 });
   }
   return crushers;
 }
