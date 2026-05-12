@@ -161,7 +161,7 @@ const TopDown = (() => {
     ctx.restore();
   }
 
-  function render(level, player, enemies, bullets, flashAlpha, fadeTiles = 12, flickerEvent = null, ventAnim = null) {
+  function render(level, player, enemies, bullets, flashAlpha, fadeTiles = 12, flickerEvent = null, ventAnim = null, teleSpot = null) {
     _world = level.worldIndex || 0;
     ctx.fillStyle = '#0a0a14';
     ctx.fillRect(0, 0, W, H);
@@ -277,6 +277,21 @@ const TopDown = (() => {
       ctx.beginPath();
       ctx.arc(e.x * TS, e.y * TS, r, 0, Math.PI * 2);
       ctx.fill();
+      ctx.stroke();
+    }
+
+    // Teleport spot marker
+    if (teleSpot) {
+      const tx = teleSpot.x * TS, ty = teleSpot.y * TS;
+      const tp = 0.5 + 0.5 * Math.sin(now / 220);
+      ctx.strokeStyle = `rgba(180,100,255,${0.55 + tp * 0.45})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(tx, ty, TS * 0.44, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = `rgba(220,160,255,${0.3 + tp * 0.3})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty - TS * 0.6); ctx.lineTo(tx, ty + TS * 0.6);
+      ctx.moveTo(tx - TS * 0.6, ty); ctx.lineTo(tx + TS * 0.6, ty);
       ctx.stroke();
     }
 

@@ -51,6 +51,7 @@ let deathCause, deathTimer, lastGameOffscreen;
 let flickerEvent = null;
 let flickerCooldown = 8;
 let ventAnim = null;
+let teleSpot = null;
 
 function startGame() {
   newRun();
@@ -73,8 +74,9 @@ function loadLevel(idx) {
   boss         = null;
   vigFade      = 12;
   flickerEvent = null;
-  flickerCooldown = 8;
+  flickerCooldown = 20;
   ventAnim = null;
+  teleSpot = null;
 
   const sp = level.playerStart;
   if (!player) {
@@ -277,12 +279,23 @@ function update(dt) {
         }
       }
 
+      // Teleport spot — E sets it, E again teleports
+      if (Input.wasPressed('KeyE')) {
+        if (!teleSpot) {
+          teleSpot = { x: player.x, y: player.y, angle: player.angle };
+        } else {
+          player.x = teleSpot.x; player.y = teleSpot.y; player.angle = teleSpot.angle;
+          player.vx = player.vy = 0;
+          teleSpot = null;
+        }
+      }
+
       // Figure event
       if (!level.isBossLevel && (level.holes || []).length > 0) {
         flickerCooldown = Math.max(0, flickerCooldown - dt);
         if (!flickerEvent && flickerCooldown <= 0) {
-          const base = [14, 10,  7,  4][worldIndex] || 10;
-          const jit  = [ 6,  5,  4,  3][worldIndex] ||  5;
+          const base = [40, 30, 22, 14][worldIndex] || 30;
+          const jit  = [18, 12,  9,  6][worldIndex] || 12;
           flickerCooldown = base + Math.random() * jit;
           flickerEvent = { t: 0, swept: false };
         }
@@ -423,7 +436,7 @@ function render() {
     case STATE.PLAYING:
     case STATE.BOSS_INTRO: {
       const flash = state === STATE.PLAYING ? player.flashTimer : 0;
-      offscreen = TopDown.render(level, player, level.enemies, bullets, flash, vigFade, flickerEvent, ventAnim);
+      offscreen = TopDown.render(level, player, level.enemies, bullets, flash, vigFade, flickerEvent, ventAnim, teleSpot);
       lastGameOffscreen = offscreen;
       ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
       if (player) {
