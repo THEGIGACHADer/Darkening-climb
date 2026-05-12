@@ -173,11 +173,16 @@ const TopDown = (() => {
     ctx.rotate(-player.angle - Math.PI / 2);
     ctx.translate(-player.x * TS, -player.y * TS);
 
-    // Draw all map tiles
+    // Draw only tiles near the player (culling for large maps)
     const rows = level.grid.length;
     const cols = level.grid[0] ? level.grid[0].length : 0;
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
+    const VIS = 26;
+    const r0 = Math.max(0, Math.floor(player.y) - VIS);
+    const r1 = Math.min(rows, Math.ceil(player.y) + VIS);
+    const c0 = Math.max(0, Math.floor(player.x) - VIS);
+    const c1 = Math.min(cols, Math.ceil(player.x) + VIS);
+    for (let row = r0; row < r1; row++) {
+      for (let col = c0; col < c1; col++) {
         drawTile(level.grid[row][col], col * TS, row * TS);
       }
     }

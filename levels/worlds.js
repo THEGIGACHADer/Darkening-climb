@@ -1,9 +1,10 @@
 // Procedural level generator — 4 worlds × 5 levels = 20 levels
-// Interior: 24 cols × 18 rows inside '#' border walls
+// Interior: 80 cols × 60 rows inside '#' border walls
 
 const WORLD_SPEEDS = [1.0, 1.2, 1.4, 1.8];
 
-const _IW = 24, _IH = 18;
+const _IW = 80, _IH = 60;
+const _LW = 24, _LH = 18; // layout template size (obstacles placed in sub-grids)
 
 // ─── Seeded LCG RNG ──────────────────────────────────────────────────────────
 let _seeds = null;
@@ -400,10 +401,10 @@ function _placeEnemies(g, rng, worldIndex, levelInWorld) {
   const lv = levelInWorld;
   let slimes = 0, zombies = 0;
   switch (worldIndex) {
-    case 0: slimes  = 5+lv;   break;              // 5–9
-    case 1: zombies = 4+lv;   break;              // 4–8
-    case 2: slimes  = 3+lv;   zombies = 3+lv; break;  // (3–7) each
-    case 3: slimes  = 5+lv*2; zombies = 4+lv*2; break; // (5–13) + (4–12)
+    case 0: slimes  = 12+lv*2;  break;                      // 12–20
+    case 1: zombies = 10+lv*2;  break;                      // 10–18
+    case 2: slimes  = 8+lv*2;   zombies = 8+lv*2;  break;  // 8–16 each
+    case 3: slimes  = 12+lv*3;  zombies = 10+lv*3; break;  // 12–24 + 10–22
   }
 
   let idx = 0;
@@ -413,10 +414,11 @@ function _placeEnemies(g, rng, worldIndex, levelInWorld) {
 
 // ─── Map assembly ─────────────────────────────────────────────────────────────
 function _buildMap(g) {
-  const rows = ['##########################'];
+  const border = '#'.repeat(_IW + 2);
+  const rows = [border];
   for (let r = 0; r < _IH; r++)
     rows.push('#' + g[r].join('') + (r === _IH-1 ? 'e' : '#'));
-  rows.push('##########################');
+  rows.push(border);
   return rows;
 }
 
@@ -432,7 +434,17 @@ function getLevelDef(levelIndex) {
   const layout   = eligible[rng() * eligible.length | 0];
 
   const g = _blank();
-  layout.fn(g, rng);
+  // Scatter 3-5 layout instances across the larger map
+  const nPasses = 3 + (rng() * 3 | 0);
+  for (let p = 0; p < nPasses; p++) {
+    const sub = Array.from({length: _LH}, () => Array(_LW).fill('.'));
+    layout.fn(sub, rng);
+    const offC = rng() * (_IW - _LW) | 0;
+    const offR = rng() * (_IH - _LH) | 0;
+    for (let r = 0; r < _LH; r++)
+      for (let c = 0; c < _LW; c++)
+        if (sub[r][c] === '#') _set(g, offC + c, offR + r, '#');
+  }
   _clearZones(g);
   _placeHoles(g, rng);
   _placeEnemies(g, rng, worldIndex, levelInWorld);
