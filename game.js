@@ -286,7 +286,7 @@ function update(dt) {
               player.y = next.y;
             }
           }
-          const figSweepDone = flickerEvent && flickerEvent.t >= 6.0;
+          const figSweepDone = flickerEvent && flickerEvent.t >= 11.0;
           const manualExit = !flickerEvent && Input.wasPressed('KeyG');
           if (ventAnim.t >= 0.3 && (figSweepDone || manualExit)) {
             ventAnim.phase = 'exit'; ventAnim.t = 0;
@@ -350,7 +350,7 @@ function update(dt) {
         if (flickerEvent) {
           flickerEvent.t += dt;
           flickerEvent.hiding = player.hiding;
-          if (flickerEvent.t >= 5 && !flickerEvent.swept) {
+          if (flickerEvent.t >= 10 && !flickerEvent.swept) {
             flickerEvent.swept = true;
             vigFade = Math.min(20, vigFade + 5);
             if (!flickerEvent.hiding && !devInvincible) {
@@ -360,7 +360,7 @@ function update(dt) {
               setState(STATE.DEATH_ANIM);
             }
           }
-          if (flickerEvent && flickerEvent.t >= 6.5) flickerEvent = null;
+          if (flickerEvent && flickerEvent.t >= 11.5) flickerEvent = null;
         }
       }
 

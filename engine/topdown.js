@@ -336,9 +336,9 @@ const TopDown = (() => {
     // Flicker event overlays
     if (flickerEvent) {
       const fe = flickerEvent;
-      if (fe.t < 5) {
+      if (fe.t < 10) {
         // Warning phase — sudden blackout blinks, lights-on otherwise
-        const prog = fe.t / 5;
+        const prog = fe.t / 10;
         const block = Math.floor(now / 75);
         const h = (Math.imul(block, 2654435761) ^ (block >>> 16)) >>> 0;
         const p = 0.04 + prog * 0.24;
@@ -346,7 +346,7 @@ const TopDown = (() => {
           ctx.fillStyle = 'rgba(0,0,0,0.93)';
           ctx.fillRect(0, 0, W, H);
         }
-      } else if (fe.t < 6.5) {
+      } else if (fe.t < 11.5) {
         // Storm phase — partial blackout so room is faintly visible
         ctx.fillStyle = 'rgba(0,0,0,0.78)';
         ctx.fillRect(0, 0, W, H);
