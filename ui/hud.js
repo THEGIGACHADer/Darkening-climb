@@ -6,7 +6,7 @@ const HUD = (() => {
   const BAR_W = 88, BAR_H = 9;
   const BAR_X = 4, BAR_Y = H - 14;
 
-  function draw(ctx, player, worldIndex, levelInWorld, mode, teleCooldown = 0) {
+  function draw(ctx, player, worldIndex, levelInWorld, mode, teleCooldown = 0, level = null) {
     const accent = WORLD_ACCENTS[worldIndex] || '#22cc44';
     const hpPct  = Math.max(0, player.hp / Player.MAX_HP);
 
@@ -87,6 +87,31 @@ const HUD = (() => {
       ctx.fillStyle = '#cc88ff';
       ctx.font = 'bold 5px Arial, sans-serif';
       ctx.fillText(`TELE ${Math.ceil(teleCooldown)}s`, cX + 1, cY + cH + 6);
+    }
+
+    // ── Minimap ─────────────────────────────────────────────────────────────
+    if (level && level.grid && level.grid[0]) {
+      const mmH = level.grid.length, mmW = level.grid[0].length;
+      const sc = 1;
+      const mx = 2, my = 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(mx - 1, my - 1, mmW * sc + 2, mmH * sc + 2);
+      for (let r = 0; r < mmH; r++) {
+        for (let c = 0; c < mmW; c++) {
+          const cell = level.grid[r][c];
+          if      (cell === 1) ctx.fillStyle = '#7a8898';
+          else if (cell === 8) ctx.fillStyle = '#00cc55';
+          else                 ctx.fillStyle = '#252530';
+          ctx.fillRect(mx + c * sc, my + r * sc, sc, sc);
+        }
+      }
+      // Vents
+      ctx.fillStyle = 'rgba(80,100,255,0.9)';
+      for (const h of (level.holes || []))
+        ctx.fillRect(mx + Math.floor(h.x) * sc, my + Math.floor(h.y) * sc, sc, sc);
+      // Player dot
+      ctx.fillStyle = '#44aaff';
+      ctx.fillRect(mx + Math.floor(player.x) * sc - 0, my + Math.floor(player.y) * sc - 0, sc + 1, sc + 1);
     }
 
     // ── Controls legend ─────────────────────────────────────────────────────

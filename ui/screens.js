@@ -75,9 +75,10 @@ const Screens = (() => {
     const controls = [
       'WASD  —  Move & Strafe',
       '← →  —  Rotate',
-      'W  —  Jump  (boss fights)',
       'Space  —  Shoot',
-      'G  —  Hide  (figure event)',
+      'G  —  Enter / exit vent',
+      'R  —  Travel to next vent',
+      'E  —  Set / use teleport',
       'Enter  —  Pause',
     ];
     controls.forEach((line, i) => centeredText(ctx, line, 105 + i*12, 6, '#bbaa88'));
@@ -107,25 +108,31 @@ const Screens = (() => {
     });
   }
 
-  function drawGameOver(ctx) {
+  function drawGameOver(ctx, cause) {
     ctx.fillStyle = 'rgba(0,0,0,0.88)';
     ctx.fillRect(0, 0, W, H);
 
-    // Red vignette border
+    const isFigure = cause === 'figure';
+    const vigColor = isFigure ? '60,60,160' : '160,0,0';
     const vig = ctx.createRadialGradient(W/2,H/2,30,W/2,H/2,W*0.7);
     vig.addColorStop(0,'rgba(0,0,0,0)');
-    vig.addColorStop(1,'rgba(160,0,0,0.55)');
+    vig.addColorStop(1,`rgba(${vigColor},0.55)`);
     ctx.fillStyle = vig; ctx.fillRect(0,0,W,H);
 
+    const title = isFigure ? 'YOU WERE SEEN' : 'YOU DIED';
+    const titleColor = isFigure ? '#1800aa' : '#881800';
+    const titleColor2 = isFigure ? '#4433ff' : '#ff2200';
     ctx.font = '16px Arial, sans-serif';
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillText('YOU DIED', (W - ctx.measureText('YOU DIED').width)/2 + 2, 92);
-    centeredText(ctx, 'YOU DIED', 90, 16, '#881800');
-    centeredText(ctx, 'YOU DIED', 89, 16, '#ff2200');
+    ctx.fillText(title, (W - ctx.measureText(title).width)/2 + 2, 92);
+    centeredText(ctx, title, 90, 16, titleColor);
+    centeredText(ctx, title, 89, 16, titleColor2);
 
-    ctx.strokeStyle = '#440000';
+    ctx.strokeStyle = isFigure ? '#000044' : '#440000';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(W*0.2,96); ctx.lineTo(W*0.8,96); ctx.stroke();
+
+    if (isFigure) centeredText(ctx, 'it found you in the dark', 112, 6, '#8888cc');
 
     centeredText(ctx, 'PRESS SPACE TO RETRY', 130, 7, '#ffcc00');
   }
@@ -206,17 +213,24 @@ const Screens = (() => {
     ctx.fillRect(0, 0, W, H);
     if (alpha > 0.2) {
       const a = (alpha - 0.2) / 0.8;
-      centeredText(ctx, 'BOSS FIGHT', 75, 14, `rgba(200,0,0,${a})`);
+      centeredText(ctx, 'BOSS FIGHT', 68, 14, `rgba(200,0,0,${a})`);
       const names = ['SLIME QUEEN', 'ZOMBIE KING', 'NECROMANCER', 'DARK OVERLORD'];
+      const descs = [
+        'the caves shake beneath you',
+        'the dead refuse to stay down',
+        'something ancient stirs',
+        'the darkness has a face',
+      ];
       ctx.globalAlpha = a;
-      centeredText(ctx, names[worldIndex], 100, 9, accent);
+      centeredText(ctx, names[worldIndex], 90, 9, accent);
+      centeredText(ctx, descs[worldIndex], 108, 5, '#888877');
+      centeredText(ctx, 'combat mode  —  A/D move, W jump, Space shoot', 128, 5, '#556655');
       ctx.globalAlpha = 1;
-      // Warning bar
       ctx.fillStyle = `rgba(200,0,0,${a * 0.18})`;
-      ctx.fillRect(W*0.15, 108, W*0.7, 6);
+      ctx.fillRect(W*0.15, 136, W*0.7, 6);
       ctx.strokeStyle = `rgba(200,0,0,${a * 0.5})`;
       ctx.lineWidth = 1;
-      ctx.strokeRect(W*0.15, 108, W*0.7, 6);
+      ctx.strokeRect(W*0.15, 136, W*0.7, 6);
     }
   }
 

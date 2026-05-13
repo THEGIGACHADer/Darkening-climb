@@ -57,10 +57,27 @@ function _gapH(g, row, c, len) {
   for (let i = 0; i < len; i++) _set(g, c+i, row, '.');
 }
 
-// Always clear player-start zone (top-left) and exit approach (bottom-right)
+// Clear player-start zone (top-left only — exit is placed by _placeExit)
 function _clearZones(g) {
-  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) g[r][c] = '.';
-  for (let r = _IH-3; r < _IH; r++) for (let c = _IW-3; c < _IW; c++) g[r][c] = '.';
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) g[r][c] = '.';
+}
+
+// Place exit tile at a random floor cell far from player start
+function _placeExit(g, rng) {
+  const cells = [];
+  for (let r = 0; r < _IH; r++)
+    for (let c = 0; c < _IW; c++) {
+      if (g[r][c] !== '.') continue;
+      if (c * c + r * r < 15 * 15) continue; // far from top-left start
+      cells.push([r, c]);
+    }
+  if (cells.length === 0)
+    for (let r = _IH - 4; r < _IH; r++)
+      for (let c = _IW - 4; c < _IW; c++)
+        if (g[r][c] === '.') cells.push([r, c]);
+  if (cells.length === 0) return;
+  const [r, c] = cells[rng() * cells.length | 0];
+  g[r][c] = 'e';
 }
 
 // ─── Layout templates ────────────────────────────────────────────────────────
@@ -356,7 +373,7 @@ function _placeCrushers(g, rng, worldIndex, levelInWorld) {
   const crushers = [];
   for (let i = 0; i < count && i < cells.length; i++) {
     const [r, c] = cells[i];
-    crushers.push({ x: c + 1.5, y: r + 1.5, speed: 3.2 + worldIndex * 0.7 });
+    crushers.push({ x: c + 1.5, y: r + 1.5, speed: 2.0 + worldIndex * 0.5 });
   }
   return crushers;
 }
@@ -408,7 +425,7 @@ function _buildMap(g) {
   const border = '#'.repeat(_IW + 2);
   const rows = [border];
   for (let r = 0; r < _IH; r++)
-    rows.push('#' + g[r].join('') + (r === _IH-1 ? 'e' : '#'));
+    rows.push('#' + g[r].join('') + '#');
   rows.push(border);
   return rows;
 }
@@ -437,6 +454,7 @@ function getLevelDef(levelIndex) {
         if (sub[r][c] === '#') _set(g, offC + c, offR + r, '#');
   }
   _clearZones(g);
+  _placeExit(g, rng);
   _placeHoles(g, rng);
   _placeEnemies(g, rng, worldIndex, levelInWorld);
   _placeBoosts(g, rng);

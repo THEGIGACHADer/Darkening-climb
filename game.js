@@ -60,7 +60,7 @@ function startGame() {
   levelIndex    = 0;
   worldIndex    = 0;
   levelInWorld  = 0;
-  flickerCooldown = 20;
+  flickerCooldown = 45;
   loadLevel(levelIndex);
   // Full HP is preserved across levels (no reset per-level)
   player.hp = Player.MAX_HP;
@@ -275,15 +275,20 @@ function update(dt) {
           ventAnim.phase = 'inside'; ventAnim.t = 0;
         }
         if (ventAnim.phase === 'inside') {
-          // R — travel to next vent in the network
+          // R — travel to nearest other vent
           if (Input.wasPressed('KeyR')) {
             const holes = level.holes || [];
-            const idx = holes.indexOf(ventAnim.hole);
-            const next = holes[(idx + 1) % holes.length];
-            if (next && next !== ventAnim.hole) {
-              ventAnim.hole = next;
-              player.x = next.x;
-              player.y = next.y;
+            let nearest = null, nearestDist = Infinity;
+            for (const h of holes) {
+              if (h === ventAnim.hole) continue;
+              const dx = h.x - ventAnim.hole.x, dy = h.y - ventAnim.hole.y;
+              const d = dx * dx + dy * dy;
+              if (d < nearestDist) { nearestDist = d; nearest = h; }
+            }
+            if (nearest) {
+              ventAnim.hole = nearest;
+              player.x = nearest.x;
+              player.y = nearest.y;
             }
           }
           const figSweepDone = flickerEvent && flickerEvent.t >= 11.0;
@@ -369,8 +374,8 @@ function update(dt) {
 
       if (devNoDarkness) vigFade = 20;
       else {
-        const drainMult = (flickerEvent && flickerEvent.t < 10) ? 1.8 : 1;
-        vigFade = Math.max(0, vigFade - Math.sqrt(vigFade) * 0.17 * drainMult * dt);
+        const drainMult = (flickerEvent && flickerEvent.t < 10) ? 1.5 : 1;
+        vigFade = Math.max(0, vigFade - Math.sqrt(vigFade) * 0.10 * drainMult * dt);
       }
 
       // Game over — check before exit so death can't be skipped by standing on exit
@@ -486,7 +491,7 @@ function render() {
         const scaleY = canvas.height / INTERNAL_H;
         ctx.save();
         ctx.scale(scaleX, scaleY);
-        HUD.draw(ctx, player, worldIndex, levelInWorld, '3D', teleCooldown);
+        HUD.draw(ctx, player, worldIndex, levelInWorld, '3D', teleCooldown, level);
         if (grabState) {
           const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 80);
           const gvig = ctx.createRadialGradient(INTERNAL_W/2, INTERNAL_H/2, 0, INTERNAL_W/2, INTERNAL_H/2, INTERNAL_H * 0.7);
@@ -502,6 +507,11 @@ function render() {
           ctx.strokeStyle = '#ff4444';
           ctx.lineWidth = 1;
           ctx.strokeRect(bX - 0.5, bY - 0.5, bW + 1, bH + 1);
+          ctx.fillStyle = `rgba(255,160,160,${0.7 + pulse * 0.3})`;
+          ctx.font = 'bold 7px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${grabState.presses} / 6`, INTERNAL_W / 2, bY - 3);
+          ctx.textAlign = 'left';
         }
         ctx.restore();
       }
@@ -558,7 +568,7 @@ function render() {
         const bg = TopDown.render(level, player, [], [], 0.6, vigFade);
         tc.drawImage(bg, 0, 0, INTERNAL_W, INTERNAL_H);
       }
-      Screens.drawGameOver(tc);
+      Screens.drawGameOver(tc, deathCause);
       ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
       return;
     }
