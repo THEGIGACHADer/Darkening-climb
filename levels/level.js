@@ -66,10 +66,11 @@ const Level = (() => {
         for (const c of this.crushers) {
           const rowAligned = Math.abs(py - c.y) < 0.8;
           const colAligned = Math.abs(px - c.x) < 0.8;
+          const MAX_SIGHT = 12;
           let vx = 0, vy = 0;
-          if (rowAligned && this._axisLOS(c.x, c.y, px, c.y)) {
+          if (rowAligned && Math.abs(px - c.x) <= MAX_SIGHT && this._axisLOS(c.x, c.y, px, c.y)) {
             vx = px - c.x;
-          } else if (colAligned && this._axisLOS(c.x, c.y, c.x, py)) {
+          } else if (colAligned && Math.abs(py - c.y) <= MAX_SIGHT && this._axisLOS(c.x, c.y, c.x, py)) {
             vy = py - c.y;
           }
           if (vx !== 0 || vy !== 0) {

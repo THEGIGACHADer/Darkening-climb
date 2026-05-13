@@ -367,8 +367,11 @@ function update(dt) {
       // Speed boost pickup
       if (level.collectBoost(player.x, player.y)) player.boostTimer = 4;
 
-      if (devNoDarkness) vigFade = 12;
-      else vigFade = Math.max(0, vigFade - Math.sqrt(vigFade) * 0.17 * dt);
+      if (devNoDarkness) vigFade = 20;
+      else {
+        const drainMult = (flickerEvent && flickerEvent.t < 10) ? 1.8 : 1;
+        vigFade = Math.max(0, vigFade - Math.sqrt(vigFade) * 0.17 * drainMult * dt);
+      }
 
       // Game over — check before exit so death can't be skipped by standing on exit
       if (!devInvincible) {

@@ -89,6 +89,11 @@ const HUD = (() => {
       ctx.fillText(`TELE ${Math.ceil(teleCooldown)}s`, cX + 1, cY + cH + 6);
     }
 
+    // ── Controls legend ─────────────────────────────────────────────────────
+    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+    ctx.font = '4px Arial, sans-serif';
+    ctx.fillText('G: vent   R: travel   E: teleport', BAR_X + 1, BAR_Y - 9);
+
     // ── Speed boost bar ─────────────────────────────────────────────────────
     if (player.boostTimer > 0) {
       const bPct = Math.min(1, player.boostTimer / 4);
